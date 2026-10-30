@@ -14,3 +14,5 @@ class Esporte:
     descricao: Optional[str] = None
     alterado_em: datetime
     criado_em: datetime
+    
+    ##oaidoaissocorro
