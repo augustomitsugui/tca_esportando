@@ -6,15 +6,18 @@ from datetime import datetime
 class AtletaResumo:
     id: int
     nome: str
+    email: str
     ano: int
     bio: Optional[str] = None
+
 
 @dataclass(frozen=True)
 class Atleta:
     id: int
     nome: str
+    email: str
     ano: int
-    bio: Optional[str] = None
     treinador_id: int
     alterado_em: datetime
     criado_em: datetime
+    bio: Optional[str] = None

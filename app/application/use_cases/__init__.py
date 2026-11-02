@@ -1,6 +1,17 @@
-from app.application.use_cases.aluno import AlunoUseCases
-from app.application.use_cases.curso import CursoUseCases
-from app.application.use_cases.disciplina import DisciplinaUseCases
-from app.application.use_cases.matricula import MatriculaUseCases
+from app.application.use_cases import (
+    AtletaUseCases,
+    CoordenadorUseCases,
+    TreinadorUseCases,
+    EsporteUseCases,
+    BaseUseCases,
+    LocalUseCases,
+)
 
-__all__ = ["AlunoUseCases", "CursoUseCases", "DisciplinaUseCases", "MatriculaUseCases"]
+__all__ = [
+    "AtletaUseCases",
+    "CoordenadorUseCases",
+    "TreinadorUseCases",
+    "EsporteUseCases",
+    "BaseUseCases",
+    "LocalUseCases",
+]

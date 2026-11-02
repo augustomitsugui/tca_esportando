@@ -8,6 +8,7 @@ class TreinadorResumo:
     nome: str
     email: str
     bio: Optional[str] = None
+
 @dataclass(frozen=True)
 class Treinador:
     id: int

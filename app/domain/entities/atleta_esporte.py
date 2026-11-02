@@ -1,5 +1,4 @@
-from dataclasses import dataclass, field
-from typing import TYPE_CHECKING
+from dataclasses import dataclass
 from datetime import datetime
 
 @dataclass

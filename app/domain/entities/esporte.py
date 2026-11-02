@@ -1,5 +1,6 @@
 from typing import Optional
 from dataclasses import dataclass, field
+from datetime import datetime
 
 @dataclass
 class EsporteResumo:
@@ -14,5 +15,3 @@ class Esporte:
     descricao: Optional[str] = None
     alterado_em: datetime
     criado_em: datetime
-    
-    ##oaidoaissocorro
