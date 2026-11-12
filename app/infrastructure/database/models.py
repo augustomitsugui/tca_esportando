@@ -1,7 +1,7 @@
 from datetime import datetime
 import uuid
 
-from sqlalchemy import Boolean, DateTime, String, UUID, func
+from sqlalchemy import Boolean, DateTime, String, UUID, UniqueConstraint, func
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy import ForeignKey
 
@@ -66,8 +66,12 @@ class LocalModel(Base):
     criado_em: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     alterado_em: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 
-class TreinadorEsporteModel(Base):
-    __tablename__ = "treinador_esportes"
+class EsporteTreinadorModel(Base):
+    __tablename__ = "esporte_treinadores"
+    
+    __table_args__ = (
+        UniqueConstraint('treinador_id', 'esporte_id', name='uix_esporte_treinador'),
+    )
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     treinador_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("treinadores.id"), nullable=False)
@@ -78,6 +82,9 @@ class TreinadorEsporteModel(Base):
 class AtletaEsporteModel(Base):
     __tablename__ = "atleta_esportes"
 
+    __table_args__ = (
+        UniqueConstraint("atleta_id", "esporte_id", name="uq_atleta_esporte"),
+    )
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     atleta_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("atletas.id"), nullable=False)
     esporte_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("esportes.id"), nullable=False)

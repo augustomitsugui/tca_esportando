@@ -13,4 +13,7 @@ class UserRole(str, enum.Enum):
 class UserIdentity:
     id: UUID
     email: str
+    hashed_password: str
+    is_active: bool
+    is_verified: bool
     role: UserRole

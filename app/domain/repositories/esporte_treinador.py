@@ -1,16 +1,16 @@
-from dataclasses import dataclass
-from datetime import datetime
+from abc import ABC, abstractmethod
 
-@dataclass
-class EsporteTreinadorResumo:
-    id: int
-    esporte_id: int
-    treinador_id: int
-    
-@dataclass(frozen=True)
-class EsporteTreinador:
-    id: int
-    esporte_id: int
-    treinador_id: int
-    alterado_em: datetime
-    criado_em: datetime
+from app.domain.entities.esporte import Esporte
+from app.domain.entities.treinador import Treinador
+
+
+class EsporteTreinadorRepository(ABC):
+
+    @abstractmethod
+    async def vincular(self, esporte_id: int, treinador_id: int) -> None: ...
+
+    @abstractmethod
+    async def desvincular(self, esporte_id: int, treinador_id: int) -> None: ...
+
+    @abstractmethod
+    async def list_by_esporte(self, esporte_id: int) -> list[Treinador]: ...

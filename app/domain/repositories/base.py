@@ -2,9 +2,6 @@ from abc import ABC, abstractmethod
 from typing import Generic, TypeVar
 
 T = TypeVar("T")
-# isso aqui serve pra eu nao ficar repetindo o mesmo codigo de repository em 
-# todos os repositorios, pq todos vao ter esses metodos basicos!!
-
 
 class BaseRepository(ABC, Generic[T]):
 
