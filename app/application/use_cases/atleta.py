@@ -1,6 +1,7 @@
 from app.application.dtos.atleta import AtletaDTO
 from app.domain.entities.atleta import Atleta
 from app.domain.repositories.atleta import AtletaRepository
+from app.core.exceptions import Forbidden
 from .base import BaseUseCase
 from uuid import UUID
 import uuid
@@ -32,6 +33,24 @@ class AtletaUseCases(BaseUseCase[Atleta]):
 
     async def list_by_nome(self, nome: str) -> list[Atleta]:
         return await self.repository.list_by_nome(nome)
+
+    async def list_for_user(
+        self, user_id: UUID, is_superuser: bool = False
+    ) -> list[Atleta]:
+        if is_superuser:
+            return await self.repository.list_all()
+        return [
+            item for item in await self.repository.list_all()
+            if item.user_id == user_id
+        ]
+
+    async def get_for_user(
+        self, atleta_id: UUID, user_id: UUID, is_superuser: bool = False
+    ) -> Atleta:
+        atleta = await self.get(atleta_id)
+        if not is_superuser and atleta.user_id != user_id:
+            raise Forbidden("Você só pode visualizar seus próprios dados.")
+        return atleta
 
     async def list_by_ano(self, ano: UUID) -> list[Atleta]:
         return await self.repository.list_by_ano(ano)

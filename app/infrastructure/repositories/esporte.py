@@ -15,6 +15,7 @@ class EsporteRepositoryImpl(BaseRepositoryImpl[Esporte, EsporteModel]):
     def _to_entity(self, model: EsporteModel) -> Esporte:
         return Esporte(
             id=model.id,
+            user_id=model.criado_por_user_id,
             nome=model.nome,
             descricao=model.descricao,
             criado_em=model.criado_em,
@@ -24,6 +25,7 @@ class EsporteRepositoryImpl(BaseRepositoryImpl[Esporte, EsporteModel]):
     def _to_model(self, entity: Esporte) -> EsporteModel:
         return EsporteModel(
             id=entity.id,
+            criado_por_user_id=entity.user_id,
             nome=entity.nome,
             descricao=entity.descricao,
             criado_em=entity.criado_em,

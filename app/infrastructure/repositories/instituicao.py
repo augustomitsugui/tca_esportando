@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.domain.entities.instituicao import Instituicao
 from app.domain.repositories.instituicao import InstituicaoRepository
-from app.infrastructure.database.models import InstituicaoModel
+from app.infrastructure.database.models import CoordenadorModel, InstituicaoModel
 
 
 class InstituicaoRepositoryImpl(InstituicaoRepository):
@@ -15,6 +15,13 @@ class InstituicaoRepositoryImpl(InstituicaoRepository):
     async def create(self, entity: Instituicao) -> Instituicao:
         model = self._to_model(entity)
         self.session.add(model)
+        coordinator = await self.session.scalar(
+            select(CoordenadorModel).where(
+                CoordenadorModel.user_id == entity.criado_por_user_id
+            )
+        )
+        if coordinator is not None:
+            coordinator.instituicao_id = entity.id
         await self.session.commit()
         await self.session.refresh(model)
         return self._to_entity(model)
@@ -64,6 +71,7 @@ class InstituicaoRepositoryImpl(InstituicaoRepository):
     def _to_entity(model: InstituicaoModel) -> Instituicao:
         return Instituicao(
             id=model.id,
+            criado_por_user_id=model.criado_por_user_id,
             nome=model.nome,
             descricao=model.descricao,
             latitude=model.latitude,
@@ -76,6 +84,7 @@ class InstituicaoRepositoryImpl(InstituicaoRepository):
     def _to_model(entity: Instituicao) -> InstituicaoModel:
         return InstituicaoModel(
             id=entity.id,
+            criado_por_user_id=entity.criado_por_user_id,
             nome=entity.nome,
             descricao=entity.descricao,
             latitude=entity.latitude,

@@ -15,6 +15,7 @@ class CoordenadorRepositoryImpl(BaseRepositoryImpl[Coordenador, CoordenadorModel
         return Coordenador(
             id=model.id,
             user_id=model.user_id,
+            instituicao_id=model.instituicao_id,
             nome=model.nome,
             email=model.email,
             bio=model.bio,
@@ -26,6 +27,7 @@ class CoordenadorRepositoryImpl(BaseRepositoryImpl[Coordenador, CoordenadorModel
         return CoordenadorModel(
             id=entity.id,
             user_id=entity.user_id,
+            instituicao_id=entity.instituicao_id,
             nome=entity.nome,
             email=entity.email,
             bio=entity.bio,

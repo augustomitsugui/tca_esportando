@@ -6,6 +6,7 @@ from dataclasses import asdict
 from uuid import UUID
 import uuid
 from datetime import datetime, timezone
+from app.core.exceptions import Forbidden
 
 class TreinadorUseCases(BaseUseCase[Treinador]):
     def __init__(self, repository: TreinadorRepository):
@@ -26,4 +27,22 @@ class TreinadorUseCases(BaseUseCase[Treinador]):
     
     async def list_by_esporte(self, esporte_id: UUID) -> list[Treinador]:
         return await self.repository.list_by_esporte(esporte_id)
+
+    async def list_for_user(
+        self, user_id: UUID, is_superuser: bool = False
+    ) -> list[Treinador]:
+        if is_superuser:
+            return await self.repository.list_all()
+        return [
+            item for item in await self.repository.list_all()
+            if item.user_id == user_id
+        ]
+
+    async def get_for_user(
+        self, treinador_id: UUID, user_id: UUID, is_superuser: bool = False
+    ) -> Treinador:
+        treinador = await self.get(treinador_id)
+        if not is_superuser and treinador.user_id != user_id:
+            raise Forbidden("Você só pode visualizar seus próprios dados.")
+        return treinador
     

@@ -7,7 +7,13 @@ from .instituicao import Instituicao
 from .local_instituicao import LocalInstituicao
 from .atleta_esporte import AtletaEsporte
 from .esporte_treinador import EsporteTreinador
-from .user import UserIdentity, UserRole
+from .role_request import RoleRequest
+from .user import (
+    RoleRequestRole,
+    RoleRequestStatus,
+    UserIdentity,
+    UserRole,
+)
 from .treino import Treino, TreinoAgenda
 
 __all__ = [
@@ -18,6 +24,9 @@ __all__ = [
     "Local",
     "UserIdentity",
     "UserRole",
+    "RoleRequest",
+    "RoleRequestRole",
+    "RoleRequestStatus",
     "Instituicao",
     "LocalInstituicao",
     "AtletaEsporte",

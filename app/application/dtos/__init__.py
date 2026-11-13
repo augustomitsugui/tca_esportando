@@ -8,6 +8,7 @@ from .atleta_esporte import AtletaEsporteDTO
 from .atleta import AtletaDTO
 from .instituicao import InstituicaoDTO
 from .local_instituicao import LocalInstituicaoDTO
+from .role_request import RoleRequestCreateDTO, RoleRequestDecisionDTO
 
 __all__ = [
     "LocalDTO",
@@ -22,4 +23,6 @@ __all__ = [
     "AtletaDTO",
     "InstituicaoDTO",
     "LocalInstituicaoDTO",
+    "RoleRequestCreateDTO",
+    "RoleRequestDecisionDTO",
 ]

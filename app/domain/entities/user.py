@@ -4,10 +4,10 @@ from uuid import UUID
 
 
 class UserRole(str, enum.Enum):
-    SUPERADMIN = "superadmin"
     COORDENADOR = "coordenador"
     TREINADOR = "treinador"
     ATLETA = "atleta"
+
 
 @dataclass
 class UserIdentity:
@@ -17,3 +17,14 @@ class UserIdentity:
     is_active: bool
     is_verified: bool
     role: UserRole
+
+
+class RoleRequestRole(str, enum.Enum):
+    TREINADOR = "treinador"
+    COORDENADOR = "coordenador"
+
+
+class RoleRequestStatus(str, enum.Enum):
+    PENDENTE = "pendente"
+    APROVADA = "aprovada"
+    REJEITADA = "rejeitada"

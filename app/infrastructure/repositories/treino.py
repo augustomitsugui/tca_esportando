@@ -7,6 +7,7 @@ from app.domain.entities.treino import Treino
 from app.domain.entities.treino import TreinoAgenda
 from app.infrastructure.database.models import (
     AtletaEsporteModel,
+    AtletaModel,
     EsporteModel,
     LocalModel,
     TreinadorModel,
@@ -45,6 +46,18 @@ class TreinoRepositoryImpl(BaseRepositoryImpl[Treino, TreinoModel]):
             criado_em=entity.criado_em,
             alterado_em=entity.alterado_em,
         )
+
+    async def get_treinador_id_by_user(self, user_id: UUID) -> UUID | None:
+        result = await self.session.execute(
+            select(TreinadorModel.id).where(TreinadorModel.user_id == user_id)
+        )
+        return result.scalar_one_or_none()
+
+    async def get_atleta_id_by_user(self, user_id: UUID) -> UUID | None:
+        result = await self.session.execute(
+            select(AtletaModel.id).where(AtletaModel.user_id == user_id)
+        )
+        return result.scalar_one_or_none()
         
     async def list_by_atleta(self, atleta_id: UUID) -> list[Treino]:
         stmt = (

@@ -6,12 +6,36 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.domain.entities.local_instituicao import LocalInstituicao
 from app.domain.repositories.local_instituicao import LocalInstituicaoRepository
-from app.infrastructure.database.models import InstituicaoLocalModel
+from app.infrastructure.database.models import (
+    InstituicaoLocalModel,
+    InstituicaoModel,
+    LocalModel,
+)
 
 
 class LocalInstituicaoRepositoryImpl(LocalInstituicaoRepository):
     def __init__(self, session: AsyncSession):
         self.session = session
+
+    async def local_owned_by(self, local_id: UUID, user_id: UUID) -> bool:
+        result = await self.session.execute(
+            select(LocalModel.id).where(
+                LocalModel.id == local_id,
+                LocalModel.criado_por_user_id == user_id,
+            )
+        )
+        return result.scalar_one_or_none() is not None
+
+    async def institution_owned_by(
+        self, institution_id: UUID, user_id: UUID
+    ) -> bool:
+        result = await self.session.execute(
+            select(InstituicaoModel.id).where(
+                InstituicaoModel.id == institution_id,
+                InstituicaoModel.criado_por_user_id == user_id,
+            )
+        )
+        return result.scalar_one_or_none() is not None
 
     async def vincular(self, entity: LocalInstituicao) -> LocalInstituicao:
         model = InstituicaoLocalModel(

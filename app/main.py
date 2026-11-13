@@ -16,6 +16,7 @@ from app.presentation.api.local_esporte_router import (
 )
 from app.presentation.api.treino_router import router as treino_router
 from app.presentation.api.treinador_router import router as treinador_router
+from app.presentation.api.role_request_router import router as role_request_router
 
 app = FastAPI(
     title="FastAPI Base",
@@ -32,6 +33,7 @@ app.include_router(local_instituicao_router)
 app.include_router(local_esporte_router)
 app.include_router(treino_router)
 app.include_router(treinador_router)
+app.include_router(role_request_router)
 
 
 

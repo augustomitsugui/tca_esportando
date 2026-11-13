@@ -11,8 +11,10 @@ from app.application.use_cases import (
     LocalUseCases,
     TreinoUseCases,
     TreinadorUseCases,
+    RoleRequestUseCases,
 )
 from app.domain.entities.user import UserRole
+from app.core.exceptions import Forbidden
 from app.domain.services.auth_service import AuthService
 from app.infrastructure.database.session import get_db
 from app.infrastructure.database.models import UserModel
@@ -26,6 +28,7 @@ from app.infrastructure.repositories import (
     LocalRepositoryImpl,
     TreinoRepositoryImpl,
     TreinadorRepositoryImpl,
+    RoleRequestRepositoryImpl,
 )
 from app.infrastructure.security.user_manager import current_active_user
 
@@ -84,17 +87,37 @@ def get_local_use_cases(
     return LocalUseCases(LocalRepositoryImpl(session))
 
 
+def get_role_request_use_cases(
+    session: AsyncSession = Depends(get_db),
+) -> RoleRequestUseCases:
+    return RoleRequestUseCases(RoleRequestRepositoryImpl(session))
+
+
 class RoleChecker:
     def __init__(self, allowed_roles: list[UserRole]):
         self.allowed_roles = allowed_roles
 
-    def __call__(self, user: UserModel = Depends(current_active_user)) -> UserModel:
+    async def __call__(
+        self,
+        user: UserModel = Depends(current_active_user),
+    ) -> UserModel:
+        if user.is_superuser:
+            return user
         AuthService.ensure_role(user.role, self.allowed_roles)
         return user
 
 
 requer_coordenador = RoleChecker([UserRole.COORDENADOR])
-requer_professor = RoleChecker([UserRole.TREINADOR])
-requer_professor_ou_coordenador = RoleChecker(
-    [UserRole.TREINADOR, UserRole.COORDENADOR]
-)
+requer_treinador = RoleChecker([UserRole.TREINADOR])
+requer_atleta = RoleChecker([UserRole.ATLETA])
+async def require_superadmin(
+    user: UserModel = Depends(current_active_user),
+) -> UserModel:
+    if not user.is_superuser:
+        raise Forbidden("Apenas o Super Admin pode executar esta ação.")
+    return user
+
+
+require_atleta = requer_atleta
+require_treinador = requer_treinador
+require_coordenador = requer_coordenador

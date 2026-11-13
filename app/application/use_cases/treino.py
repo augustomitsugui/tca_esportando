@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from uuid import UUID
 
 from app.application.dtos.treino import TreinoCreateDTO, TreinoUpdateDTO
-from app.core.exceptions import NotFound
+from app.core.exceptions import Forbidden, NotFound
 from app.domain.entities.treino import Treino, TreinoAgenda
 from app.domain.repositories.treino import TreinoRepository
 
@@ -23,6 +23,14 @@ class TreinoUseCases:
         )
         return await self.repository.create(treino)
 
+    async def create_for_user(self, dto: TreinoCreateDTO, user_id: UUID) -> Treino:
+        treinador_id = await self.repository.get_treinador_id_by_user(user_id)
+        if treinador_id is None:
+            raise Forbidden("O usuário não possui perfil de treinador.")
+        if dto.treinador_id != treinador_id:
+            raise Forbidden("O treino deve pertencer ao treinador autenticado.")
+        return await self.create(dto)
+
     async def get(self, treino_id: UUID) -> Treino:
         treino = await self.repository.get(treino_id)
         if treino is None:
@@ -31,6 +39,30 @@ class TreinoUseCases:
 
     async def list_all(self) -> list[Treino]:
         return await self.repository.list_all()
+
+    async def list_for_user(
+        self, user_id: UUID, is_superuser: bool = False
+    ) -> list[Treino]:
+        if is_superuser:
+            return await self.repository.list_all()
+        treinador_id = await self.repository.get_treinador_id_by_user(user_id)
+        if treinador_id is None:
+            raise Forbidden("O usuário não possui perfil de treinador.")
+        return [
+            item
+            for item in await self.repository.list_all()
+            if item.treinador_id == treinador_id
+        ]
+
+    async def get_for_user(
+        self, treino_id: UUID, user_id: UUID, is_superuser: bool = False
+    ) -> Treino:
+        treino = await self.get(treino_id)
+        if not is_superuser:
+            treinador_id = await self.repository.get_treinador_id_by_user(user_id)
+            if treinador_id is None or treino.treinador_id != treinador_id:
+                raise Forbidden("Você só pode visualizar seus próprios treinos.")
+        return treino
 
     async def update(self, treino_id: UUID, dto: TreinoUpdateDTO) -> Treino:
         existing = await self.get(treino_id)
@@ -48,12 +80,43 @@ class TreinoUseCases:
         )
         return await self.repository.update(updated)
 
+    async def update_for_user(
+        self, treino_id: UUID, dto: TreinoUpdateDTO, user_id: UUID
+    ) -> Treino:
+        existing = await self.get(treino_id)
+        treinador_id = await self.repository.get_treinador_id_by_user(user_id)
+        if treinador_id is None or existing.treinador_id != treinador_id:
+            raise Forbidden("Você só pode alterar seus próprios treinos.")
+        if dto.treinador_id is not None and dto.treinador_id != treinador_id:
+            raise Forbidden("O treino deve permanecer vinculado ao treinador autenticado.")
+        return await self.update(
+            treino_id,
+            TreinoUpdateDTO(
+                nome=dto.nome,
+                data_hora=dto.data_hora,
+                treinador_id=treinador_id,
+                local_id=dto.local_id,
+                esporte_id=dto.esporte_id,
+                descricao=dto.descricao,
+            ),
+        )
+
     async def delete(self, treino_id: UUID) -> None:
         await self.get(treino_id)
         await self.repository.delete(treino_id)
 
+    async def delete_for_user(self, treino_id: UUID, user_id: UUID) -> None:
+        existing = await self.get(treino_id)
+        treinador_id = await self.repository.get_treinador_id_by_user(user_id)
+        if treinador_id is None or existing.treinador_id != treinador_id:
+            raise Forbidden("Você só pode excluir seus próprios treinos.")
+        await self.repository.delete(treino_id)
+
     async def list_by_atleta(self, atleta_id: UUID) -> list[Treino]:
         return await self.repository.list_by_atleta(atleta_id)
+
+    async def get_atleta_by_user(self, user_id: UUID) -> UUID | None:
+        return await self.repository.get_atleta_id_by_user(user_id)
 
     async def list_upcoming_by_atleta(self, atleta_id: UUID) -> list[TreinoAgenda]:
         return await self.repository.list_upcoming_by_atleta(atleta_id)

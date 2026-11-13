@@ -11,6 +11,7 @@ class LocalResumo:
 @dataclass(frozen=True)
 class Local:
     id: UUID
+    criado_por_user_id: Optional[UUID]
     nome: str
     alterado_em: datetime
     criado_em: datetime

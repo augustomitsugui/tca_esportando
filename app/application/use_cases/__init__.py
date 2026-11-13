@@ -8,11 +8,13 @@ from .local_instituicao import LocalInstituicaoUseCases
 from .local_esporte import LocalEsporteUseCases
 from .treino import TreinoUseCases
 from .treinador import TreinadorUseCases
+from .role_request import RoleRequestUseCases
 
 __all__ = [
     "AtletaUseCases",
     "CoordenadorUseCases",
     "TreinadorUseCases",
+    "RoleRequestUseCases",
     "EsporteUseCases",
     "BaseUseCase",
     "InstituicaoUseCases",

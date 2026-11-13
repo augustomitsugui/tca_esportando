@@ -14,6 +14,7 @@ class LocalRepositoryImpl(BaseRepositoryImpl[Local, LocalModel]):
     def _to_entity(self, model: LocalModel) -> Local:
         return Local(
             id=model.id,
+            criado_por_user_id=model.criado_por_user_id,
             nome=model.nome,
             descricao=model.descricao,
             criado_em=model.criado_em,
@@ -23,6 +24,7 @@ class LocalRepositoryImpl(BaseRepositoryImpl[Local, LocalModel]):
     def _to_model(self, entity: Local) -> LocalModel:
         return LocalModel(
             id=entity.id,
+            criado_por_user_id=entity.criado_por_user_id,
             nome=entity.nome,
             descricao=entity.descricao,
             criado_em=entity.criado_em,

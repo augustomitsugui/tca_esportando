@@ -11,6 +11,7 @@ from .local import LocalRepositoryImpl
 from .treinador import TreinadorRepositoryImpl
 from .user import UserRepositoryImpl
 from .treino import TreinoRepositoryImpl
+from .role_request import RoleRequestRepositoryImpl
 
 __all__ = [
     "InstituicaoRepositoryImpl",
@@ -26,4 +27,5 @@ __all__ = [
     "TreinadorRepositoryImpl",
     "UserRepositoryImpl",
     "TreinoRepositoryImpl",
+    "RoleRequestRepositoryImpl",
 ]

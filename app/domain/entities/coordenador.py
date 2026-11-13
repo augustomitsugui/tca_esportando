@@ -16,6 +16,7 @@ class CoordenadorResumo:
 class Coordenador:
     id: UUID
     user_id: UUID
+    instituicao_id: UUID | None
     nome: str
     email: str
     alterado_em: datetime

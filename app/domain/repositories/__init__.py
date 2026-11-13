@@ -10,6 +10,7 @@ from .esporte_treinador import EsporteTreinadorRepository
 from .instituicao import InstituicaoRepository
 from .local_instituicao import LocalInstituicaoRepository
 from .local_esporte import LocalEsporteRepository
+from .role_request import RoleRequestRepository
 from .treino import TreinoRepository
 
 __all__ = [
@@ -25,5 +26,6 @@ __all__ = [
     "InstituicaoRepository",
     "LocalInstituicaoRepository",
     "LocalEsporteRepository",
+    "RoleRequestRepository",
     "TreinoRepository",
 ]

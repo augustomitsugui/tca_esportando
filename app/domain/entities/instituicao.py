@@ -14,6 +14,7 @@ class InstituicaoResumo:
 @dataclass(frozen=True)
 class Instituicao:
     id: UUID
+    criado_por_user_id: Optional[UUID]
     nome: str
     descricao: Optional[str]
     latitude: Optional[float]

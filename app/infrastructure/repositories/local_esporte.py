@@ -17,6 +17,24 @@ class LocalEsporteRepositoryImpl(LocalEsporteRepository):
     def __init__(self, session: AsyncSession):
         self.session = session
 
+    async def local_owned_by(self, local_id: UUID, user_id: UUID) -> bool:
+        result = await self.session.execute(
+            select(LocalModel.id).where(
+                LocalModel.id == local_id,
+                LocalModel.criado_por_user_id == user_id,
+            )
+        )
+        return result.scalar_one_or_none() is not None
+
+    async def esporte_owned_by(self, esporte_id: UUID, user_id: UUID) -> bool:
+        result = await self.session.execute(
+            select(EsporteModel.id).where(
+                EsporteModel.id == esporte_id,
+                EsporteModel.criado_por_user_id == user_id,
+            )
+        )
+        return result.scalar_one_or_none() is not None
+
     async def add(self, local_id: UUID, esporte_id: UUID) -> None:
         existing = await self.session.execute(
             select(LocalEsporteModel).where(
@@ -62,6 +80,7 @@ class LocalEsporteRepositoryImpl(LocalEsporteRepository):
     def _to_esporte(model: EsporteModel) -> Esporte:
         return Esporte(
             id=model.id,
+            user_id=model.criado_por_user_id,
             nome=model.nome,
             descricao=model.descricao,
             criado_em=model.criado_em,
@@ -72,6 +91,7 @@ class LocalEsporteRepositoryImpl(LocalEsporteRepository):
     def _to_local(model: LocalModel) -> Local:
         return Local(
             id=model.id,
+            criado_por_user_id=model.criado_por_user_id,
             nome=model.nome,
             descricao=model.descricao,
             criado_em=model.criado_em,

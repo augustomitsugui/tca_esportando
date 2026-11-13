@@ -1,12 +1,16 @@
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Response, status
+from app.infrastructure.database.models import UserModel
 
 from app.application.dtos.local_instituicao import LocalInstituicaoDTO
 from app.application.use_cases.local_instituicao import LocalInstituicaoUseCases
 from app.presentation.dependencies import get_local_instituicao_use_cases
 from app.presentation.schemas.local_instituicao import (
     LocalInstituicaoResponse,
+)
+from app.presentation.dependencies import (
+    require_coordenador,
 )
 
 router = APIRouter(tags=["LocalInstituicao"])
@@ -20,12 +24,15 @@ router = APIRouter(tags=["LocalInstituicao"])
 async def vincular_local_instituicao(
     local_id: UUID,
     instituicao_id: UUID,
+    user: UserModel = Depends(require_coordenador),
     use_cases: LocalInstituicaoUseCases = Depends(
         get_local_instituicao_use_cases
     ),
 ) -> LocalInstituicaoResponse:
     vinculo = await use_cases.vincular(
-        LocalInstituicaoDTO(local_id=local_id, instituicao_id=instituicao_id)
+        LocalInstituicaoDTO(local_id=local_id, instituicao_id=instituicao_id),
+        user.id,
+        user.is_superuser,
     )
     return LocalInstituicaoResponse.model_validate(vinculo)
 
@@ -37,11 +44,14 @@ async def vincular_local_instituicao(
 async def desvincular_local_instituicao(
     local_id: UUID,
     instituicao_id: UUID,
+    user: UserModel = Depends(require_coordenador),
     use_cases: LocalInstituicaoUseCases = Depends(
         get_local_instituicao_use_cases
     ),
 ) -> Response:
-    await use_cases.desvincular(local_id, instituicao_id)
+    await use_cases.desvincular(
+        local_id, instituicao_id, user.id, user.is_superuser
+    )
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
@@ -51,11 +61,14 @@ async def desvincular_local_instituicao(
 )
 async def listar_instituicoes_do_local(
     local_id: UUID,
+    user: UserModel = Depends(require_coordenador),
     use_cases: LocalInstituicaoUseCases = Depends(
         get_local_instituicao_use_cases
     ),
 ) -> list[LocalInstituicaoResponse]:
-    vinculos = await use_cases.list_by_local(local_id)
+    vinculos = await use_cases.list_by_local_for_user(
+        local_id, user.id, user.is_superuser
+    )
     return [LocalInstituicaoResponse.model_validate(vinculo) for vinculo in vinculos]
 
 
@@ -65,9 +78,12 @@ async def listar_instituicoes_do_local(
 )
 async def listar_locais_da_instituicao(
     instituicao_id: UUID,
+    user: UserModel = Depends(require_coordenador),
     use_cases: LocalInstituicaoUseCases = Depends(
         get_local_instituicao_use_cases
     ),
 ) -> list[LocalInstituicaoResponse]:
-    vinculos = await use_cases.list_by_instituicao(instituicao_id)
+    vinculos = await use_cases.list_by_instituicao_for_user(
+        instituicao_id, user.id, user.is_superuser
+    )
     return [LocalInstituicaoResponse.model_validate(vinculo) for vinculo in vinculos]

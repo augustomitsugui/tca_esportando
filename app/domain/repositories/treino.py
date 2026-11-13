@@ -8,6 +8,12 @@ from uuid import UUID
 
 class TreinoRepository(BaseRepository[Treino]):
     @abstractmethod
+    async def get_atleta_id_by_user(self, user_id: UUID) -> UUID | None: ...
+
+    @abstractmethod
+    async def get_treinador_id_by_user(self, user_id: UUID) -> UUID | None: ...
+
+    @abstractmethod
     async def list_by_atleta(self, atleta_id: UUID) -> list[Treino]: ...
 
     @abstractmethod

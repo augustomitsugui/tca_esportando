@@ -4,6 +4,7 @@ from uuid import UUID
 
 class CoordenadorResponse(BaseModel):
     id: UUID
+    instituicao_id: UUID | None = None
     nome: str
     email: EmailStr
     bio: Optional[str] = None
@@ -21,6 +22,7 @@ class CoordenadroResumo(BaseModel):
     email: EmailStr
     
 class CoordenadorCreate(BaseModel):
+    instituicao_id: UUID
     nome: str
     email: EmailStr
     bio: Optional[str] = None
