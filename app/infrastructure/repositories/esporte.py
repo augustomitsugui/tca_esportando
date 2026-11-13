@@ -2,9 +2,12 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.domain.entities.esporte import Esporte
 from app.infrastructure.database.models import EsporteModel
-from app.domain.repositories.base import BaseRepository
+from app.infrastructure.database.models import LocalEsporteModel
+from app.infrastructure.repositories.base import BaseRepositoryImpl
 
-class EsporteRepositoryImpl(BaseRepository[Esporte, EsporteModel]):
+from uuid import UUID
+
+class EsporteRepositoryImpl(BaseRepositoryImpl[Esporte, EsporteModel]):
     @property
     def model_class(self) -> type[EsporteModel]:
         return EsporteModel
@@ -27,12 +30,16 @@ class EsporteRepositoryImpl(BaseRepository[Esporte, EsporteModel]):
             alterado_em=entity.alterado_em,
         )
         
-    async def list_by_treinador(self, treinador_id: int) -> list[Esporte]:
-        stmt = select(EsporteModel).where(EsporteModel.treinador_id == treinador_id)
-        result = await self.session.execute(stmt)
-        return [self._to_entity(row[0]) for row in result.fetchall()]
+    async def list_by_treinador(self, treinador_id: UUID) -> list[Esporte]:
+        raise NotImplementedError(
+            "A relação Esporte-Treinador é tratada pela tabela associativa."
+        )
     
-    async def list_by_local(self, local_id: int) -> list[Esporte]:
-        stmt = select(EsporteModel).where(EsporteModel.local_id == local_id)
+    async def list_by_local(self, local_id: UUID) -> list[Esporte]:
+        stmt = (
+            select(EsporteModel)
+            .join(LocalEsporteModel, LocalEsporteModel.esporte_id == EsporteModel.id)
+            .where(LocalEsporteModel.local_id == local_id)
+        )
         result = await self.session.execute(stmt)
-        return [self._to_entity(row[0]) for row in result.fetchall()]
+        return [self._to_entity(model) for model in result.scalars().all()]

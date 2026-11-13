@@ -1,6 +1,10 @@
-from fastapi_users.authentication import AuthenticationBackend, BearerTransport, JWTStrategy
+from fastapi_users.authentication import (
+    AuthenticationBackend,
+    BearerTransport,
+    JWTStrategy,
+)
 
-from back.app.core.config import JWT_LIFETIME_SECONDS, JWT_SECRET
+from app.core.config import JWT_LIFETIME_SECONDS, JWT_SECRET
 
 bearer_transport = BearerTransport(tokenUrl="auth/jwt/login")
 

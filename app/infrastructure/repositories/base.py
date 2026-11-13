@@ -11,7 +11,7 @@ T = TypeVar("T")
 M = TypeVar("M")
 
 
-class BaseRepositoryImpl(BaseRepository[T], Generic[T, M], ABC):
+class BaseRepositoryImpl(BaseRepository[T], Generic[T, M]):
 
     def __init__(self, session: AsyncSession):
         self.session = session
@@ -73,7 +73,7 @@ class BaseRepositoryImpl(BaseRepository[T], Generic[T, M], ABC):
 
         return self._to_entity(existing_model)
 
-    async def delete(self, entity_id: UUID) -> None:
+    async def delete(self, entity_id: UUID) -> bool:
         result = await self.session.execute(
             select(self.model_class).where(self.model_class.id == entity_id)
         )
@@ -81,10 +81,11 @@ class BaseRepositoryImpl(BaseRepository[T], Generic[T, M], ABC):
         model = result.scalar_one_or_none()
 
         if model is None:
-            return
+            return False
 
         await self.session.delete(model)
         await self.session.commit()
+        return True
 
     async def list_all(self) -> list[T]:
         result = await self.session.execute(select(self.model_class))

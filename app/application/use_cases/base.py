@@ -1,6 +1,7 @@
 from typing import Generic, TypeVar
 from app.core.exceptions import NotFoundException
 from app.domain.repositories.base import BaseRepository
+from uuid import UUID
 
 T = TypeVar("T")
 
@@ -9,7 +10,7 @@ class BaseUseCase(Generic[T]):
     def __init__(self, repository: BaseRepository[T]):
         self.repository = repository
 
-    async def get(self, entity_id: int) -> T:
+    async def get(self, entity_id: UUID) -> T:
         entity = await self.repository.get(entity_id)
 
         if not entity:
@@ -20,10 +21,10 @@ class BaseUseCase(Generic[T]):
     async def list_all(self) -> list[T]:
         return await self.repository.list_all()
 
-    async def update(self, entity_id: int, entity: T) -> T:
+    async def update(self, entity_id: UUID, entity: T) -> T:
         existing = await self.get(entity_id)
         return await self.repository.update(entity)
 
-    async def delete(self, entity_id: int) -> None:
+    async def delete(self, entity_id: UUID) -> None:
         await self.get(entity_id)
         await self.repository.delete(entity_id)

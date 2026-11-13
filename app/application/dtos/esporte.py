@@ -1,7 +1,8 @@
 from dataclasses import dataclass
 
+from uuid import UUID
+
 @dataclass(frozen=True)
 class EsporteDTO:
-    id: int
     nome: str
     descricao: str | None = None

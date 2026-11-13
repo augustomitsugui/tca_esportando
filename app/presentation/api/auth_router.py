@@ -1,8 +1,8 @@
 from fastapi import APIRouter
 
-from back.app.infrastructure.security.auth_backend import auth_backend
-from back.app.infrastructure.security.user_manager import fastapi_users
-from back.app.presentation.schemas.user_schemas import UserCreate, UserRead
+from app.infrastructure.security.auth_backend import auth_backend
+from app.infrastructure.security.user_manager import fastapi_users
+from app.presentation.schemas.user import UserCreate, UserRead
 
 router = APIRouter()
 router.include_router(

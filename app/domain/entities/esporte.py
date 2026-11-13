@@ -1,17 +1,20 @@
 from typing import Optional
 from dataclasses import dataclass, field
 from datetime import datetime
+from uuid import UUID
 
 @dataclass
 class EsporteResumo:
-    id: int
+    id: UUID
+    user_id: UUID
     nome: str
     descricao: Optional[str] = None
-    
+
 @dataclass(frozen=True)
 class Esporte:
-    id: int
+    id: UUID
     nome: str
-    descricao: Optional[str] = None
     alterado_em: datetime
     criado_em: datetime
+    user_id: Optional[UUID] = None
+    descricao: Optional[str] = None

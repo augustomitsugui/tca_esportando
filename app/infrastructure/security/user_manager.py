@@ -6,11 +6,11 @@ from fastapi_users import BaseUserManager, FastAPIUsers, UUIDIDMixin
 from fastapi_users_db_sqlalchemy import SQLAlchemyUserDatabase
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from back.app.core.config import RESET_PASSWORD_TOKEN_SECRET, VERIFICATION_TOKEN_SECRET
-from back.app.infrastructure.database.session import get_db
-from back.app.infrastructure.database.models import UserModel
-from back.app.infrastructure.security.auth_backend import auth_backend
-from back.app.infrastructure.security.password_hasher import password_helper
+from app.core.config import RESET_PASSWORD_TOKEN_SECRET, VERIFICATION_TOKEN_SECRET
+from app.infrastructure.database.session import get_db
+from app.infrastructure.database.models import UserModel
+from app.infrastructure.security.auth_backend import auth_backend
+from app.infrastructure.security.password_hasher import password_helper
 
 
 async def get_user_db(session: AsyncSession = Depends(get_db)):
@@ -22,7 +22,9 @@ class UserManager(UUIDIDMixin, BaseUserManager[UserModel, UUID]):
     verification_token_secret = VERIFICATION_TOKEN_SECRET
     password_helper = password_helper
 
-    async def on_after_register(self, user: UserModel, request: Optional[Request] = None):
+    async def on_after_register(
+        self, user: UserModel, request: Optional[Request] = None
+    ):
         print(f"Usuário {user.id} foi registrado com sucesso.")
 
 

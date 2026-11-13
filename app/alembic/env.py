@@ -7,9 +7,9 @@ from alembic import context
 
 # Linhas Adiocionadas
 import os
-from back.app.core.config import DATABASE_URL
-from back.app.infrastructure.database.session import Base
-import back.app.infrastructure.database.models  # Registra todos os mapeamentos ORM.
+from app.core.config import DATABASE_URL
+from app.infrastructure.database.session import Base
+import app.infrastructure.database.models  # Registra todos os mapeamentos ORM.
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

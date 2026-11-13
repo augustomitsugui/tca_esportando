@@ -1,8 +1,9 @@
 from dataclasses import dataclass
-
+from uuid import UUID
 @dataclass(frozen=True)
 class localDTO:
-    id: int
     nome: str
-    email: str
     descricao: str | None = None
+
+
+LocalDTO = localDTO

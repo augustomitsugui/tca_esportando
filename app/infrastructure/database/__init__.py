@@ -1,4 +1,4 @@
-from back.app.infrastructure.database.session import (
+from app.infrastructure.database.session import (
     Base, async_session_maker, engine, get_async_session, get_db,
 )
 

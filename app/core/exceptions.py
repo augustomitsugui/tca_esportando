@@ -12,6 +12,9 @@ class NotFound(ApplicationError):
         super().__init__(message, 404)
 
 
+NotFoundException = NotFound
+
+
 class InvalidReference(ApplicationError):
     def __init__(self, message: str):
         super().__init__(message, 400)

@@ -1,16 +1,16 @@
 from dataclasses import dataclass
 from datetime import datetime
-
+from uuid import UUID
 @dataclass
 class AtletaEsporteResumo:
-    id: int
-    atleta_id: int
-    esporte_id: int
+    id: UUID
+    atleta_id: UUID
+    esporte_id: UUID
     
 @dataclass(frozen=True)
 class AtletaEsporte:
-    id: int
-    atleta_id: int
-    esporte_id: int
+    id: UUID
+    atleta_id: UUID
+    esporte_id: UUID
     alterado_em: datetime
     criado_em: datetime 

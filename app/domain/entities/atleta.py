@@ -1,10 +1,12 @@
 from dataclasses import dataclass, field
 from typing import Optional
 from datetime import datetime
+from uuid import UUID
 
 @dataclass
 class AtletaResumo:
-    id: int
+    id: UUID
+    user_id: UUID
     nome: str
     email: str
     ano: int
@@ -13,11 +15,11 @@ class AtletaResumo:
 
 @dataclass(frozen=True)
 class Atleta:
-    id: int
+    id: UUID
+    user_id: UUID
     nome: str
     email: str
     ano: int
-    treinador_id: int
     alterado_em: datetime
     criado_em: datetime
     bio: Optional[str] = None
