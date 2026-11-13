@@ -51,7 +51,6 @@ class AtletaModel(Base):
         nullable=False,
     )
 
-
 class TreinadorModel(Base):
     __tablename__ = "treinadores"
 
@@ -128,6 +127,18 @@ class RoleRequestModel(Base):
     institution_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True), ForeignKey("instituicoes.id"), nullable=True
     )
+    institution_name: Mapped[str | None] = mapped_column(
+        String(length=100), nullable=True
+    )
+    institution_description: Mapped[str | None] = mapped_column(
+        String(length=1024), nullable=True
+    )
+    institution_latitude: Mapped[float | None] = mapped_column(
+        Float, nullable=True
+    )
+    institution_longitude: Mapped[float | None] = mapped_column(
+        Float, nullable=True
+    )
     decided_by: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True), ForeignKey("users.id"), nullable=True
     )
@@ -150,6 +161,9 @@ class EsporteModel(Base):
     )
     criado_por_user_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True), ForeignKey("users.id"), nullable=True
+    )
+    instituicao_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("instituicoes.id"), nullable=True
     )
     nome: Mapped[str] = mapped_column(String(length=100), nullable=False)
     descricao: Mapped[str] = mapped_column(String(length=1024), nullable=True)
@@ -327,6 +341,9 @@ class AtletaEsporteModel(Base):
     )
     esporte_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("esportes.id"), nullable=False
+    )
+    status: Mapped[str] = mapped_column(
+        String(length=20), default="aprovado", nullable=False
     )
     criado_em: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False

@@ -8,11 +8,25 @@ from app.application.use_cases.local import LocalUseCases
 from app.presentation.dependencies import get_local_use_cases
 from app.presentation.dependencies import (
     require_coordenador,
+    require_treinador,
 )
 from app.infrastructure.database.models import UserModel
 from app.presentation.schemas.local import LocalCreate, LocalResponse, LocalUpdate
 
 router = APIRouter(prefix="/locais", tags=["Locais"])
+trainer_router = APIRouter(prefix="/treinadores", tags=["Locais"])
+
+
+@trainer_router.get(
+    "/me/locais",
+    response_model=list[LocalResponse],
+)
+async def listar_locais_do_treinador(
+    user: UserModel = Depends(require_treinador),
+    use_cases: LocalUseCases = Depends(get_local_use_cases),
+) -> list[LocalResponse]:
+    locais = await use_cases.list_by_treinador_user(user.id)
+    return [LocalResponse.model_validate(item) for item in locais]
 
 
 @router.post("", response_model=LocalResponse, status_code=status.HTTP_201_CREATED)

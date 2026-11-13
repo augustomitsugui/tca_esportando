@@ -40,6 +40,27 @@ class InstituicaoRepositoryImpl(InstituicaoRepository):
         result = await self.session.execute(select(InstituicaoModel))
         return [self._to_entity(model) for model in result.scalars().all()]
 
+    async def list_public(self) -> list[Instituicao]:
+        result = await self.session.execute(select(InstituicaoModel))
+        return [self._to_entity(model) for model in result.scalars().all()]
+
+    async def list_by_creator(self, user_id: UUID) -> list[Instituicao]:
+        result = await self.session.execute(
+            select(InstituicaoModel).where(
+                InstituicaoModel.criado_por_user_id == user_id
+            )
+        )
+        return [self._to_entity(model) for model in result.scalars().all()]
+
+    async def coordinator_has_institution(self, user_id: UUID) -> bool:
+        result = await self.session.execute(
+            select(CoordenadorModel.instituicao_id).where(
+                CoordenadorModel.user_id == user_id,
+                CoordenadorModel.instituicao_id.isnot(None),
+            )
+        )
+        return result.scalar_one_or_none() is not None
+
     async def update(self, entity: Instituicao) -> Instituicao:
         model = await self._get_model(entity.id)
         if model is None:

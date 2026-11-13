@@ -3,7 +3,7 @@ from dataclasses import asdict
 from datetime import datetime, timezone
 from uuid import UUID
 
-from app.application.dtos.treino import TreinoCreateDTO, TreinoUpdateDTO
+from app.application.dtos.treino import UNSET, TreinoCreateDTO, TreinoUpdateDTO
 from app.core.exceptions import Forbidden, NotFound
 from app.domain.entities.treino import Treino, TreinoAgenda
 from app.domain.repositories.treino import TreinoRepository
@@ -29,6 +29,12 @@ class TreinoUseCases:
             raise Forbidden("O usuário não possui perfil de treinador.")
         if dto.treinador_id != treinador_id:
             raise Forbidden("O treino deve pertencer ao treinador autenticado.")
+        if not await self.repository.trainer_can_use_resources(
+            treinador_id, dto.esporte_id, dto.local_id
+        ):
+            raise Forbidden(
+                "O esporte e o local devem pertencer à instituição do treinador."
+            )
         return await self.create(dto)
 
     async def get(self, treino_id: UUID) -> Treino:
@@ -48,11 +54,7 @@ class TreinoUseCases:
         treinador_id = await self.repository.get_treinador_id_by_user(user_id)
         if treinador_id is None:
             raise Forbidden("O usuário não possui perfil de treinador.")
-        return [
-            item
-            for item in await self.repository.list_all()
-            if item.treinador_id == treinador_id
-        ]
+        return await self.repository.list_by_treinador(treinador_id)
 
     async def get_for_user(
         self, treino_id: UUID, user_id: UUID, is_superuser: bool = False
@@ -66,7 +68,11 @@ class TreinoUseCases:
 
     async def update(self, treino_id: UUID, dto: TreinoUpdateDTO) -> Treino:
         existing = await self.get(treino_id)
-        values = {key: value for key, value in asdict(dto).items() if value is not None}
+        values = {
+            key: value
+            for key, value in asdict(dto).items()
+            if value is not UNSET
+        }
         updated = Treino(
             id=existing.id,
             nome=values.get("nome", existing.nome),
@@ -87,8 +93,28 @@ class TreinoUseCases:
         treinador_id = await self.repository.get_treinador_id_by_user(user_id)
         if treinador_id is None or existing.treinador_id != treinador_id:
             raise Forbidden("Você só pode alterar seus próprios treinos.")
-        if dto.treinador_id is not None and dto.treinador_id != treinador_id:
+        if (
+            dto.treinador_id is not UNSET
+            and dto.treinador_id is not None
+            and dto.treinador_id != treinador_id
+        ):
             raise Forbidden("O treino deve permanecer vinculado ao treinador autenticado.")
+        esporte_id = (
+            dto.esporte_id
+            if dto.esporte_id is not UNSET and dto.esporte_id is not None
+            else existing.esporte_id
+        )
+        local_id = (
+            dto.local_id
+            if dto.local_id is not UNSET and dto.local_id is not None
+            else existing.local_id
+        )
+        if not await self.repository.trainer_can_use_resources(
+            treinador_id, esporte_id, local_id
+        ):
+            raise Forbidden(
+                "O esporte e o local devem pertencer à instituição do treinador."
+            )
         return await self.update(
             treino_id,
             TreinoUpdateDTO(

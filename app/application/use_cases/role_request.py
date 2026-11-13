@@ -29,15 +29,27 @@ class RoleRequestUseCases:
         ):
             raise Forbidden("Esse cargo não pode ser solicitado.")
 
-        if dto.institution_id is None:
-            raise InvalidReference("A instituição é obrigatória para essa solicitação.")
+        if dto.requested_role == RoleRequestRole.TREINADOR and dto.institution_id is None:
+            raise InvalidReference("A instituição é obrigatória para treinadores.")
+        if dto.requested_role == RoleRequestRole.COORDENADOR and (
+            not dto.institution_name or not dto.institution_name.strip()
+        ):
+            raise InvalidReference("O nome da instituição é obrigatório.")
 
         current_role = await self.repository.get_user_role(user_id)
-        if current_role == dto.requested_role.value:
-            raise InvalidReference("O usuário já possui esse cargo.")
+        if current_role == dto.requested_role.value and await self.repository.has_approved_role(
+            user_id, dto.requested_role.value
+        ):
+            raise InvalidReference("O usuário já possui esse cargo aprovado.")
 
         if await self.repository.has_pending(user_id, dto.requested_role):
             raise InvalidReference("Já existe uma solicitação pendente para esse cargo.")
+        if not await self.repository.has_profile_for_role(
+            user_id, dto.requested_role
+        ):
+            raise InvalidReference(
+                "O perfil correspondente ao cargo deve ser criado pelo cadastro especializado."
+            )
 
         request = RoleRequest(
             id=uuid.uuid4(),
@@ -45,6 +57,10 @@ class RoleRequestUseCases:
             requested_role=dto.requested_role,
             status=RoleRequestStatus.PENDENTE,
             institution_id=dto.institution_id,
+            institution_name=dto.institution_name,
+            institution_description=dto.institution_description,
+            institution_latitude=dto.institution_latitude,
+            institution_longitude=dto.institution_longitude,
             decided_by=None,
             created_at=datetime.now(timezone.utc),
         )
@@ -66,6 +82,16 @@ class RoleRequestUseCases:
         if institution_id is None:
             raise Forbidden("O coordenador não possui instituição definida.")
         return await self.repository.list_pending_for_coordinator(institution_id)
+
+    async def list_coordinator_history(
+        self, coordinator_id: UUID
+    ) -> list[RoleRequest]:
+        institution_id = await self.repository.get_coordinator_institution(
+            coordinator_id
+        )
+        if institution_id is None:
+            raise Forbidden("O coordenador não possui instituição definida.")
+        return await self.repository.list_for_coordinator(institution_id)
 
     async def list_for_superadmin(self) -> list[RoleRequest]:
         return await self.repository.list_all_pending()

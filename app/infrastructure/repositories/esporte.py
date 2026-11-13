@@ -1,7 +1,12 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.domain.entities.esporte import Esporte
-from app.infrastructure.database.models import EsporteModel
+from app.infrastructure.database.models import (
+    CoordenadorModel,
+    EsporteModel,
+    EsporteTreinadorModel,
+    RoleRequestModel,
+)
 from app.infrastructure.database.models import LocalEsporteModel
 from app.infrastructure.repositories.base import BaseRepositoryImpl
 
@@ -16,6 +21,7 @@ class EsporteRepositoryImpl(BaseRepositoryImpl[Esporte, EsporteModel]):
         return Esporte(
             id=model.id,
             user_id=model.criado_por_user_id,
+            instituicao_id=model.instituicao_id,
             nome=model.nome,
             descricao=model.descricao,
             criado_em=model.criado_em,
@@ -30,12 +36,19 @@ class EsporteRepositoryImpl(BaseRepositoryImpl[Esporte, EsporteModel]):
             descricao=entity.descricao,
             criado_em=entity.criado_em,
             alterado_em=entity.alterado_em,
+            instituicao_id=entity.instituicao_id,
         )
         
     async def list_by_treinador(self, treinador_id: UUID) -> list[Esporte]:
-        raise NotImplementedError(
-            "A relação Esporte-Treinador é tratada pela tabela associativa."
+        result = await self.session.execute(
+            select(EsporteModel)
+            .join(
+                EsporteTreinadorModel,
+                EsporteTreinadorModel.esporte_id == EsporteModel.id,
+            )
+            .where(EsporteTreinadorModel.treinador_id == treinador_id)
         )
+        return [self._to_entity(model) for model in result.scalars().all()]
     
     async def list_by_local(self, local_id: UUID) -> list[Esporte]:
         stmt = (
@@ -45,3 +58,31 @@ class EsporteRepositoryImpl(BaseRepositoryImpl[Esporte, EsporteModel]):
         )
         result = await self.session.execute(stmt)
         return [self._to_entity(model) for model in result.scalars().all()]
+
+    async def get_institution_id_by_user(self, user_id: UUID) -> UUID | None:
+        result = await self.session.execute(
+            select(RoleRequestModel.institution_id)
+            .where(
+                RoleRequestModel.user_id == user_id,
+                RoleRequestModel.requested_role == "treinador",
+                RoleRequestModel.status == "aprovada",
+            )
+            .order_by(RoleRequestModel.decided_at.desc())
+        )
+        return result.scalars().first()
+
+    async def list_by_institution(self, institution_id: UUID) -> list[Esporte]:
+        result = await self.session.execute(
+            select(EsporteModel).where(
+                EsporteModel.instituicao_id == institution_id
+            )
+        )
+        return [self._to_entity(model) for model in result.scalars().all()]
+
+    async def get_institution_id_by_coordinator(self, user_id: UUID) -> UUID | None:
+        result = await self.session.execute(
+            select(CoordenadorModel.instituicao_id).where(
+                CoordenadorModel.user_id == user_id
+            )
+        )
+        return result.scalar_one_or_none()

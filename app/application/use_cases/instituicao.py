@@ -15,6 +15,8 @@ class InstituicaoUseCases:
     async def create(
         self, instituicao_dto: InstituicaoDTO, user_id: UUID
     ) -> Instituicao:
+        if await self.repository.coordinator_has_institution(user_id):
+            raise Forbidden("O coordenador já administra uma instituição.")
         agora = datetime.now(timezone.utc)
         instituicao = Instituicao(
             id=uuid.uuid4(),
@@ -39,15 +41,16 @@ class InstituicaoUseCases:
     async def list_all(self) -> list[Instituicao]:
         return await self.repository.list_all()
 
+    async def list_public(self) -> list[Instituicao]:
+        return await self.repository.list_public()
+
     async def list_for_user(
         self, user_id: UUID, is_superuser: bool = False
     ) -> list[Instituicao]:
         instituicoes = await self.repository.list_all()
         if is_superuser:
             return instituicoes
-        return [
-            item for item in instituicoes if item.criado_por_user_id == user_id
-        ]
+        return await self.repository.list_by_creator(user_id)
 
     async def update(
         self,

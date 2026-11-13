@@ -1,14 +1,14 @@
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 from typing import Optional
 from uuid import UUID
 
 class LocalCreate(BaseModel):
-    nome: str
-    descricao: Optional[str] = None
+    nome: str = Field(max_length=100)
+    descricao: Optional[str] = Field(default=None, max_length=1024)
 
 class LocalUpdate(BaseModel):
-    nome: Optional[str] = None
-    descricao: Optional[str] = None
+    nome: Optional[str] = Field(default=None, max_length=100)
+    descricao: Optional[str] = Field(default=None, max_length=1024)
 
 class LocalResponse(BaseModel):
     id: UUID

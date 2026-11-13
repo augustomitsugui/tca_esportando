@@ -26,13 +26,19 @@ class LocalUseCases(BaseUseCase[Local]):
     async def list_by_treinador(self, treinador_id: UUID) -> list[Local]:
         return await self.repository.list_by_treinador(treinador_id)
 
+    async def list_by_treinador_user(self, user_id: UUID) -> list[Local]:
+        treinador_id = await self.repository.get_treinador_id_by_user(user_id)
+        if treinador_id is None:
+            raise Forbidden("O usuário não possui perfil de treinador.")
+        return await self.repository.list_by_treinador(treinador_id)
+
     async def list_for_user(
         self, user_id: UUID, is_superuser: bool = False
     ) -> list[Local]:
         locais = await self.repository.list_all()
         if is_superuser:
             return locais
-        return [item for item in locais if item.criado_por_user_id == user_id]
+        return await self.repository.list_by_creator(user_id)
 
     async def get_for_user(
         self, local_id: UUID, user_id: UUID, is_superuser: bool = False

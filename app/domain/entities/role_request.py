@@ -14,5 +14,9 @@ class RoleRequest:
     institution_id: UUID | None
     decided_by: UUID | None
     created_at: datetime
+    institution_name: str | None = None
+    institution_description: str | None = None
+    institution_latitude: float | None = None
+    institution_longitude: float | None = None
     decided_at: datetime | None = None
     rejection_reason: str | None = None

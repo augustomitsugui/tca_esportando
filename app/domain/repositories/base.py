@@ -12,11 +12,14 @@ class BaseRepository(ABC, Generic[T]):
     @abstractmethod
     async def get(self, entity_id: UUID) -> T | None: ...
 
-    async def get_by_id(self, entity_id: UUID) -> T | None:
-        return await self.get(entity_id)
+    @abstractmethod
+    async def get_by_id(self, entity_id: UUID) -> T | None: ...
 
     @abstractmethod
     async def list_all(self) -> list[T]: ...
+
+    @abstractmethod
+    async def list_public(self) -> list[T]: ...
 
     @abstractmethod
     async def delete(self, entity_id: UUID) -> bool: ...

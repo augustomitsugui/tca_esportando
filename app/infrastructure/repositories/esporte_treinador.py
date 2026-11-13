@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from uuid import uuid4
 
 from app.domain.entities.esporte_treinador import EsporteTreinador
-from app.infrastructure.database.models import EsporteTreinadorModel
+from app.infrastructure.database.models import EsporteTreinadorModel, TreinadorModel
 from uuid import UUID
 
 class EsporteTreinadorRepositoryImpl(
@@ -58,3 +58,18 @@ class EsporteTreinadorRepositoryImpl(
         stmt = select(EsporteTreinadorModel).where(EsporteTreinadorModel.esporte_id == esporte_id)
         result = await self.session.execute(stmt)
         return [self._to_entity(model) for model in result.scalars().all()]
+
+    async def get_treinador_id_by_user(self, user_id: UUID) -> UUID | None:
+        result = await self.session.execute(
+            select(TreinadorModel.id).where(TreinadorModel.user_id == user_id)
+        )
+        return result.scalar_one_or_none()
+
+    async def exists(self, esporte_id: UUID, treinador_id: UUID) -> bool:
+        result = await self.session.execute(
+            select(EsporteTreinadorModel.id).where(
+                EsporteTreinadorModel.esporte_id == esporte_id,
+                EsporteTreinadorModel.treinador_id == treinador_id,
+            )
+        )
+        return result.scalar_one_or_none() is not None

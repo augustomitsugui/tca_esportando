@@ -17,4 +17,5 @@ class Esporte:
     alterado_em: datetime
     criado_em: datetime
     user_id: Optional[UUID] = None
+    instituicao_id: Optional[UUID] = None
     descricao: Optional[str] = None

@@ -14,6 +14,19 @@ class TreinoRepository(BaseRepository[Treino]):
     async def get_treinador_id_by_user(self, user_id: UUID) -> UUID | None: ...
 
     @abstractmethod
+    async def list_by_treinador(self, treinador_id: UUID) -> list[Treino]: ...
+
+    @abstractmethod
+    async def treinador_manages_esporte(
+        self, treinador_id: UUID, esporte_id: UUID
+    ) -> bool: ...
+
+    @abstractmethod
+    async def trainer_can_use_resources(
+        self, treinador_id: UUID, esporte_id: UUID, local_id: UUID
+    ) -> bool: ...
+
+    @abstractmethod
     async def list_by_atleta(self, atleta_id: UUID) -> list[Treino]: ...
 
     @abstractmethod

@@ -1,7 +1,11 @@
 from sqlalchemy import select
 
 from app.domain.entities.atleta import Atleta
-from app.infrastructure.database.models import AtletaModel
+from app.infrastructure.database.models import (
+    AtletaEsporteModel,
+    AtletaModel,
+    EsporteTreinadorModel,
+)
 from uuid import UUID
 
 from app.infrastructure.repositories.base import BaseRepositoryImpl
@@ -37,11 +41,32 @@ class AtletaRepositoryImpl(BaseRepositoryImpl[Atleta, AtletaModel]):
         )
         
     async def list_by_treinador(self, treinador_id: UUID) -> list[Atleta]:
-        raise NotImplementedError(
-            "A relação Atleta-Treinador ainda não possui tabela associativa."
+        result = await self.session.execute(
+            select(AtletaModel)
+            .join(AtletaEsporteModel, AtletaEsporteModel.atleta_id == AtletaModel.id)
+            .join(
+                EsporteTreinadorModel,
+                EsporteTreinadorModel.esporte_id == AtletaEsporteModel.esporte_id,
+            )
+            .where(
+                EsporteTreinadorModel.treinador_id == treinador_id,
+                AtletaEsporteModel.status == "aprovado",
+            )
         )
-    
+        return list(
+            {
+                model.id: self._to_entity(model)
+                for model in result.scalars().all()
+            }.values()
+        )
+
     async def list_by_esporte(self, esporte_id: UUID) -> list[Atleta]:
-        raise NotImplementedError(
-            "A relação Atleta-Esporte é tratada pela tabela associativa."
+        result = await self.session.execute(
+            select(AtletaModel)
+            .join(AtletaEsporteModel, AtletaEsporteModel.atleta_id == AtletaModel.id)
+            .where(
+                AtletaEsporteModel.esporte_id == esporte_id,
+                AtletaEsporteModel.status == "aprovado",
+            )
         )
+        return [self._to_entity(model) for model in result.scalars().all()]

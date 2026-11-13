@@ -8,6 +8,10 @@ from app.domain.entities.user import RoleRequestRole
 class RoleRequestCreateDTO:
     requested_role: RoleRequestRole
     institution_id: UUID | None = None
+    institution_name: str | None = None
+    institution_description: str | None = None
+    institution_latitude: float | None = None
+    institution_longitude: float | None = None
 
 
 @dataclass(frozen=True)

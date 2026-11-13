@@ -1,6 +1,6 @@
 from app.domain.entities.coordenador import Coordenador
 from app.infrastructure.repositories.base import BaseRepositoryImpl
-from app.infrastructure.database.models import CoordenadorModel
+from app.infrastructure.database.models import CoordenadorModel, EsporteModel
 from uuid import UUID
 from sqlalchemy import select
 
@@ -36,8 +36,14 @@ class CoordenadorRepositoryImpl(BaseRepositoryImpl[Coordenador, CoordenadorModel
         )
         
     async def list_by_esporte(self, esporte_id: UUID) -> list[Coordenador]:
-        raise NotImplementedError(
-            "A relação Coordenador-Esporte ainda não possui tabela associativa."
+        result = await self.session.execute(
+            select(CoordenadorModel)
+            .join(
+                EsporteModel,
+                EsporteModel.instituicao_id == CoordenadorModel.instituicao_id,
+            )
+            .where(EsporteModel.id == esporte_id)
         )
+        return [self._to_entity(model) for model in result.scalars().all()]
         
     

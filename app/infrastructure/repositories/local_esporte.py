@@ -84,6 +84,7 @@ class LocalEsporteRepositoryImpl(LocalEsporteRepository):
             nome=model.nome,
             descricao=model.descricao,
             criado_em=model.criado_em,
+            instituicao_id=model.instituicao_id,
             alterado_em=model.alterado_em,
         )
 

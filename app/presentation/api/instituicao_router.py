@@ -11,6 +11,7 @@ from app.presentation.dependencies import (
 )
 from app.presentation.schemas.instituicao import (
     InstituicaoCreate,
+    InstituicaoPublicResponse,
     InstituicaoResponse,
     InstituicaoUpdate,
 )
@@ -33,6 +34,13 @@ async def create_instituicao(
     )
     return InstituicaoResponse.model_validate(instituicao)
 
+#rota publica de instituicoes pro treinador ver as instituicoes e conseguir se cadastrrar
+@router.get("/public", response_model=list[InstituicaoPublicResponse])
+async def list_instituicoes_public(
+    use_cases: InstituicaoUseCases = Depends(get_instituicao_use_cases),
+) -> list[InstituicaoPublicResponse]:
+    instituicoes = await use_cases.list_public()
+    return [InstituicaoPublicResponse.model_validate(item) for item in instituicoes]
 
 @router.get("", response_model=list[InstituicaoResponse])
 async def list_instituicoes(

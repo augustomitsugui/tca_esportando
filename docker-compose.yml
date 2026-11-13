@@ -11,6 +11,9 @@ services:
       - PYTHONDONTWRITEBYTECODE=1
       # Força o Python a enviar os logs diretamente para o terminal
       - PYTHONUNBUFFERED=1
+      - JWT_SECRET=${JWT_SECRET:?JWT_SECRET is required}
+      - RESET_PASSWORD_TOKEN_SECRET=${RESET_PASSWORD_TOKEN_SECRET:?RESET_PASSWORD_TOKEN_SECRET is required}
+      - VERIFICATION_TOKEN_SECRET=${VERIFICATION_TOKEN_SECRET:?VERIFICATION_TOKEN_SECRET is required}
       - DATABASE_URL=postgresql+psycopg://post_user:post_pass@db:5432/fastapi_db
     depends_on:
       - db

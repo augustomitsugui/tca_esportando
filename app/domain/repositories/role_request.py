@@ -25,11 +25,21 @@ class RoleRequestRepository(ABC):
         ...
 
     @abstractmethod
+    async def list_for_coordinator(self, institution_id: UUID) -> list[RoleRequest]:
+        ...
+
+    @abstractmethod
     async def list_all_pending(self) -> list[RoleRequest]:
         ...
 
     @abstractmethod
     async def has_pending(self, user_id: UUID, requested_role: RoleRequestRole) -> bool:
+        ...
+
+    @abstractmethod
+    async def has_profile_for_role(
+        self, user_id: UUID, requested_role: RoleRequestRole
+    ) -> bool:
         ...
 
     @abstractmethod
@@ -42,6 +52,10 @@ class RoleRequestRepository(ABC):
 
     @abstractmethod
     async def get_approved_institution(self, user_id: UUID) -> UUID | None:
+        ...
+
+    @abstractmethod
+    async def has_approved_role(self, user_id: UUID, role: str) -> bool:
         ...
 
     @abstractmethod

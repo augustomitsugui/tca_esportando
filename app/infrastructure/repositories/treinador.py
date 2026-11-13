@@ -1,5 +1,10 @@
 from app.domain.entities.treinador import Treinador
-from app.infrastructure.database.models import TreinadorModel
+from app.infrastructure.database.models import (
+    CoordenadorModel,
+    EsporteTreinadorModel,
+    RoleRequestModel,
+    TreinadorModel,
+)
 from app.infrastructure.repositories.base import BaseRepositoryImpl
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -35,13 +40,35 @@ class TreinadorRepositoryImpl(BaseRepositoryImpl[Treinador, TreinadorModel]):
         )
         
     async def list_by_coordenador(self, coordenador_id: UUID) -> list[Treinador]:
-        raise NotImplementedError(
-            "A relação Treinador-Coordenador ainda não possui tabela associativa."
+        result = await self.session.execute(
+            select(TreinadorModel)
+            .join(RoleRequestModel, RoleRequestModel.user_id == TreinadorModel.user_id)
+            .join(
+                CoordenadorModel,
+                CoordenadorModel.instituicao_id == RoleRequestModel.institution_id,
+            )
+            .where(
+                CoordenadorModel.id == coordenador_id,
+                RoleRequestModel.requested_role == "treinador",
+                RoleRequestModel.status == "aprovada",
+            )
+        )
+        return list(
+            {
+                model.id: self._to_entity(model)
+                for model in result.scalars().all()
+            }.values()
         )
     
     async def list_by_esporte(self, esporte_id: UUID) -> list[Treinador]:
-        raise NotImplementedError(
-            "A relação Treinador-Esporte é tratada pela tabela associativa."
+        result = await self.session.execute(
+            select(TreinadorModel)
+            .join(
+                EsporteTreinadorModel,
+                EsporteTreinadorModel.treinador_id == TreinadorModel.id,
+            )
+            .where(EsporteTreinadorModel.esporte_id == esporte_id)
         )
+        return [self._to_entity(model) for model in result.scalars().all()]
     
     

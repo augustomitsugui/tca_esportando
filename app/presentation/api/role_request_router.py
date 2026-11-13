@@ -38,6 +38,10 @@ async def solicitar_cargo(
         RoleRequestCreateDTO(
             requested_role=data.requested_role,
             institution_id=data.institution_id,
+            institution_name=data.institution_name,
+            institution_description=data.institution_description,
+            institution_latitude=data.institution_latitude,
+            institution_longitude=data.institution_longitude,
         ),
     )
     return RoleRequestResponse.model_validate(request)
@@ -61,6 +65,18 @@ async def solicitacoes_para_coordenador(
     use_cases: RoleRequestUseCases = Depends(get_role_request_use_cases),
 ) -> list[RoleRequestResponse]:
     requests = await use_cases.list_for_coordinator(_user.id)
+    return [RoleRequestResponse.model_validate(item) for item in requests]
+
+
+@router.get(
+    "/coordinator/history",
+    response_model=list[RoleRequestResponse],
+)
+async def historico_para_coordenador(
+    _user: UserModel = Depends(require_coordenador),
+    use_cases: RoleRequestUseCases = Depends(get_role_request_use_cases),
+) -> list[RoleRequestResponse]:
+    requests = await use_cases.list_coordinator_history(_user.id)
     return [RoleRequestResponse.model_validate(item) for item in requests]
 
 

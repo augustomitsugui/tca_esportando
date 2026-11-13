@@ -1,5 +1,6 @@
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 
 from app.application.use_cases import (
     AtletaUseCases,
@@ -12,16 +13,19 @@ from app.application.use_cases import (
     TreinoUseCases,
     TreinadorUseCases,
     RoleRequestUseCases,
+    AtletaEsporteUseCases,
 )
 from app.domain.entities.user import UserRole
 from app.core.exceptions import Forbidden
 from app.domain.services.auth_service import AuthService
 from app.infrastructure.database.session import get_db
-from app.infrastructure.database.models import UserModel
+from app.infrastructure.database.models import RoleRequestModel, UserModel
+from app.domain.entities.user import RoleRequestStatus
 from app.infrastructure.repositories import (
     AtletaRepositoryImpl,
     CoordenadorRepositoryImpl,
     EsporteRepositoryImpl,
+    EsporteTreinadorRepositoryImpl,
     InstituicaoRepositoryImpl,
     LocalEsporteRepositoryImpl,
     LocalInstituicaoRepositoryImpl,
@@ -29,6 +33,7 @@ from app.infrastructure.repositories import (
     TreinoRepositoryImpl,
     TreinadorRepositoryImpl,
     RoleRequestRepositoryImpl,
+    AtletaEsporteRepositoryImpl,
 )
 from app.infrastructure.security.user_manager import current_active_user
 
@@ -78,7 +83,10 @@ def get_coordenador_use_cases(
 def get_esporte_use_cases(
     session: AsyncSession = Depends(get_db),
 ) -> EsporteUseCases:
-    return EsporteUseCases(EsporteRepositoryImpl(session))
+    return EsporteUseCases(
+        EsporteRepositoryImpl(session),
+        EsporteTreinadorRepositoryImpl(session),
+    )
 
 
 def get_local_use_cases(
@@ -93,6 +101,14 @@ def get_role_request_use_cases(
     return RoleRequestUseCases(RoleRequestRepositoryImpl(session))
 
 
+def get_atleta_esporte_use_cases(
+    session: AsyncSession = Depends(get_db),
+) -> AtletaEsporteUseCases:
+    return AtletaEsporteUseCases(
+        AtletaEsporteRepositoryImpl(session)
+    )
+
+
 class RoleChecker:
     def __init__(self, allowed_roles: list[UserRole]):
         self.allowed_roles = allowed_roles
@@ -100,10 +116,21 @@ class RoleChecker:
     async def __call__(
         self,
         user: UserModel = Depends(current_active_user),
+        session: AsyncSession = Depends(get_db),
     ) -> UserModel:
         if user.is_superuser:
             return user
         AuthService.ensure_role(user.role, self.allowed_roles)
+        if user.role in (UserRole.TREINADOR.value, UserRole.COORDENADOR.value):
+            approved = await session.scalar(
+                select(RoleRequestModel.id).where(
+                    RoleRequestModel.user_id == user.id,
+                    RoleRequestModel.requested_role == user.role,
+                    RoleRequestModel.status == RoleRequestStatus.APROVADA.value,
+                )
+            )
+            if approved is None:
+                raise Forbidden("Seu perfil ainda aguarda aprovação.")
         return user
 
 

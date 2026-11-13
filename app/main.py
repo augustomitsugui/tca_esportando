@@ -8,6 +8,7 @@ from app.presentation.api.coordenador_router import router as coordenador_router
 from app.presentation.api.esporte_router import router as esporte_router
 from app.presentation.api.instituicao_router import router as instituicao_router
 from app.presentation.api.local_router import router as local_router
+from app.presentation.api.local_router import trainer_router as trainer_local_router
 from app.presentation.api.local_instituicao_router import (
     router as local_instituicao_router,
 )
@@ -17,6 +18,10 @@ from app.presentation.api.local_esporte_router import (
 from app.presentation.api.treino_router import router as treino_router
 from app.presentation.api.treinador_router import router as treinador_router
 from app.presentation.api.role_request_router import router as role_request_router
+from app.presentation.api.atleta_esporte_router import (
+    router as atleta_esporte_router,
+)
+from app.presentation.api.registration_router import router as registration_router
 
 app = FastAPI(
     title="FastAPI Base",
@@ -29,11 +34,14 @@ app.include_router(coordenador_router)
 app.include_router(esporte_router)
 app.include_router(instituicao_router)
 app.include_router(local_router)
+app.include_router(trainer_local_router)
 app.include_router(local_instituicao_router)
 app.include_router(local_esporte_router)
 app.include_router(treino_router)
 app.include_router(treinador_router)
 app.include_router(role_request_router)
+app.include_router(atleta_esporte_router)
+app.include_router(registration_router)
 
 
 

@@ -50,6 +50,9 @@ class BaseRepositoryImpl(BaseRepository[T], Generic[T, M]):
 
         return self._to_entity(model)
 
+    async def get_by_id(self, entity_id: UUID) -> T | None:
+        return await self.get(entity_id)
+
     async def update(self, entity: T) -> T:
         model_data = self._to_model(entity)
 
@@ -93,3 +96,6 @@ class BaseRepositoryImpl(BaseRepository[T], Generic[T, M]):
         models = result.scalars().all()
 
         return [self._to_entity(model) for model in models]
+
+    async def list_public(self) -> list[T]:
+        return await self.list_all()

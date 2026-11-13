@@ -10,8 +10,12 @@ from app.infrastructure.database.models import (
     AtletaModel,
     EsporteModel,
     LocalModel,
+    InstituicaoLocalModel,
+    InstituicaoModel,
+    RoleRequestModel,
     TreinadorModel,
     TreinoModel,
+    EsporteTreinadorModel,
 )
 from app.infrastructure.repositories.base import BaseRepositoryImpl
 
@@ -47,6 +51,12 @@ class TreinoRepositoryImpl(BaseRepositoryImpl[Treino, TreinoModel]):
             alterado_em=entity.alterado_em,
         )
 
+    async def list_by_treinador(self, treinador_id: UUID) -> list[Treino]:
+        result = await self.session.execute(
+            select(TreinoModel).where(TreinoModel.treinador_id == treinador_id)
+        )
+        return [self._to_entity(model) for model in result.scalars().all()]
+
     async def get_treinador_id_by_user(self, user_id: UUID) -> UUID | None:
         result = await self.session.execute(
             select(TreinadorModel.id).where(TreinadorModel.user_id == user_id)
@@ -58,6 +68,42 @@ class TreinoRepositoryImpl(BaseRepositoryImpl[Treino, TreinoModel]):
             select(AtletaModel.id).where(AtletaModel.user_id == user_id)
         )
         return result.scalar_one_or_none()
+
+    async def treinador_manages_esporte(
+        self, treinador_id: UUID, esporte_id: UUID
+    ) -> bool:
+        result = await self.session.execute(
+            select(EsporteTreinadorModel.id).where(
+                EsporteTreinadorModel.treinador_id == treinador_id,
+                EsporteTreinadorModel.esporte_id == esporte_id,
+            )
+        )
+        return result.scalar_one_or_none() is not None
+
+    async def trainer_can_use_resources(
+        self, treinador_id: UUID, esporte_id: UUID, local_id: UUID
+    ) -> bool:
+        result = await self.session.execute(
+            select(EsporteModel.id).distinct()
+            .join(
+                RoleRequestModel,
+                RoleRequestModel.institution_id == EsporteModel.instituicao_id,
+            )
+            .join(TreinadorModel, TreinadorModel.user_id == RoleRequestModel.user_id)
+            .join(
+                InstituicaoLocalModel,
+                InstituicaoLocalModel.instituicao_id
+                == EsporteModel.instituicao_id,
+            )
+            .where(
+                TreinadorModel.id == treinador_id,
+                EsporteModel.id == esporte_id,
+                InstituicaoLocalModel.local_id == local_id,
+                RoleRequestModel.requested_role == "treinador",
+                RoleRequestModel.status == "aprovada",
+            )
+        )
+        return result.scalar_one_or_none() is not None
         
     async def list_by_atleta(self, atleta_id: UUID) -> list[Treino]:
         stmt = (
@@ -67,6 +113,7 @@ class TreinoRepositoryImpl(BaseRepositoryImpl[Treino, TreinoModel]):
                 AtletaEsporteModel.esporte_id == TreinoModel.esporte_id,
             )
             .where(AtletaEsporteModel.atleta_id == atleta_id)
+            .where(AtletaEsporteModel.status == "aprovado")
             .order_by(TreinoModel.data_hora)
         )
         result = await self.session.execute(stmt)
@@ -94,6 +141,7 @@ class TreinoRepositoryImpl(BaseRepositoryImpl[Treino, TreinoModel]):
             .join(LocalModel, LocalModel.id == TreinoModel.local_id)
             .where(
                 AtletaEsporteModel.atleta_id == atleta_id,
+                AtletaEsporteModel.status == "aprovado",
                 TreinoModel.data_hora >= agora,
             )
             .order_by(TreinoModel.data_hora)

@@ -3,12 +3,12 @@ from typing import Optional
 from uuid import UUID
 
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class TreinoCreate(BaseModel):
-    nome: str
-    descricao: Optional[str] = None
+    nome: str = Field(max_length=100)
+    descricao: Optional[str] = Field(default=None, max_length=1024)
     data_hora: datetime
     treinador_id: UUID
     local_id: UUID
@@ -16,8 +16,8 @@ class TreinoCreate(BaseModel):
 
 
 class TreinoUpdate(BaseModel):
-    nome: Optional[str] = None
-    descricao: Optional[str] = None
+    nome: Optional[str] = Field(default=None, max_length=100)
+    descricao: Optional[str] = Field(default=None, max_length=1024)
     data_hora: Optional[datetime] = None
     treinador_id: Optional[UUID] = None
     local_id: Optional[UUID] = None

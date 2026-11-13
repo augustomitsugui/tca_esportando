@@ -2,6 +2,8 @@ from dataclasses import dataclass
 from datetime import datetime
 from uuid import UUID
 
+UNSET = object()
+
 @dataclass(frozen=True)
 class TreinoCreateDTO:
     nome: str
@@ -14,12 +16,12 @@ class TreinoCreateDTO:
 
 @dataclass(frozen=True)
 class TreinoUpdateDTO:
-    nome: str | None = None
-    data_hora: datetime | None = None
-    treinador_id: UUID | None = None
-    local_id: UUID | None = None
-    esporte_id: UUID | None = None
-    descricao: str | None = None
+    nome: str | None | object = UNSET
+    data_hora: datetime | None | object = UNSET
+    treinador_id: UUID | None | object = UNSET
+    local_id: UUID | None | object = UNSET
+    esporte_id: UUID | None | object = UNSET
+    descricao: str | None | object = UNSET
 
 
 TreinoDTO = TreinoCreateDTO

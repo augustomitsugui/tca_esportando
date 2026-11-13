@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, Response, status
 from app.application.dtos.esporte import EsporteDTO
 from app.application.use_cases.esporte import EsporteUseCases
 from app.presentation.dependencies import get_esporte_use_cases
-from app.presentation.dependencies import require_treinador
+from app.presentation.dependencies import require_coordenador, require_treinador
 from app.infrastructure.database.models import UserModel
 from app.presentation.schemas.esporte import (
     EsporteCreate,
@@ -17,13 +17,27 @@ from app.presentation.schemas.esporte import (
 router = APIRouter(prefix="/esportes", tags=["Esportes"])
 
 
+@router.get(
+    "/coordenador/me",
+    response_model=list[EsporteResponse],
+)
+async def listar_esportes_do_coordenador(
+    user: UserModel = Depends(require_coordenador),
+    use_cases: EsporteUseCases = Depends(get_esporte_use_cases),
+) -> list[EsporteResponse]:
+    esportes = await use_cases.list_for_coordinator(user.id)
+    return [EsporteResponse.model_validate(item) for item in esportes]
+
+
 @router.post("", response_model=EsporteResponse, status_code=status.HTTP_201_CREATED)
 async def criar_esporte(
     data: EsporteCreate,
     user: UserModel = Depends(require_treinador),
     use_cases: EsporteUseCases = Depends(get_esporte_use_cases),
 ) -> EsporteResponse:
-    esporte = await use_cases.create(EsporteDTO(**data.model_dump()), user.id)
+    esporte = await use_cases.create(
+        EsporteDTO(**data.model_dump()), user.id, user.is_superuser
+    )
     return EsporteResponse.model_validate(esporte)
 
 
