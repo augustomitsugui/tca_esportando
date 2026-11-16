@@ -212,13 +212,13 @@ class TreinoModel(Base):
         DateTime(timezone=True), nullable=False
     )
     treinador_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("treinadores.id"), nullable=False
+        UUID(as_uuid=True), ForeignKey("treinadores.id", ondelete="CASCADE"), nullable=False
     )
     local_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("locais.id"), nullable=False
+        UUID(as_uuid=True), ForeignKey("locais.id", ondelete="CASCADE"), nullable=False
     )
     esporte_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("esportes.id"), nullable=False
+        UUID(as_uuid=True), ForeignKey("esportes.id", ondelete="CASCADE"), nullable=False
     )
     criado_em: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
@@ -266,10 +266,10 @@ class InstituicaoLocalModel(Base):
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
     instituicao_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("instituicoes.id"), nullable=False
+        UUID(as_uuid=True), ForeignKey("instituicoes.id", ondelete="CASCADE"), nullable=False
     )
     local_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("locais.id"), nullable=False
+        UUID(as_uuid=True), ForeignKey("locais.id", ondelete="CASCADE"), nullable=False
     )
     criado_em: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
@@ -293,10 +293,10 @@ class LocalEsporteModel(Base):
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
     local_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("locais.id"), nullable=False
+        UUID(as_uuid=True), ForeignKey("locais.id", ondelete="CASCADE"), nullable=False
     )
     esporte_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("esportes.id"), nullable=False
+        UUID(as_uuid=True), ForeignKey("esportes.id", ondelete="CASCADE"), nullable=False
     )
 
 
@@ -311,10 +311,10 @@ class EsporteTreinadorModel(Base):
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
     treinador_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("treinadores.id"), nullable=False
+        UUID(as_uuid=True), ForeignKey("treinadores.id", ondelete="CASCADE"), nullable=False
     )
     esporte_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("esportes.id"), nullable=False
+        UUID(as_uuid=True), ForeignKey("esportes.id", ondelete="CASCADE"), nullable=False
     )
     criado_em: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
@@ -337,10 +337,10 @@ class AtletaEsporteModel(Base):
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
     atleta_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("atletas.id"), nullable=False
+        UUID(as_uuid=True), ForeignKey("atletas.id", ondelete="CASCADE"), nullable=False
     )
     esporte_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("esportes.id"), nullable=False
+        UUID(as_uuid=True), ForeignKey("esportes.id", ondelete="CASCADE"), nullable=False
     )
     status: Mapped[str] = mapped_column(
         String(length=20), default="aprovado", nullable=False

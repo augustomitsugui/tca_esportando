@@ -1,15 +1,14 @@
 services:
   web:
     container_name: fastapi_app
-    build: .
+    build:
+      context: .
     ports:
       - "17000:8000"
     volumes:
       - .:/code
     environment:
-      # Impede que o Python crie arquivos de cache, ideal no Docker 
       - PYTHONDONTWRITEBYTECODE=1
-      # Força o Python a enviar os logs diretamente para o terminal
       - PYTHONUNBUFFERED=1
       - JWT_SECRET=${JWT_SECRET:?JWT_SECRET is required}
       - RESET_PASSWORD_TOKEN_SECRET=${RESET_PASSWORD_TOKEN_SECRET:?RESET_PASSWORD_TOKEN_SECRET is required}
