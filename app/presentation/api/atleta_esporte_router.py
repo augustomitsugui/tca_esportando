@@ -1,6 +1,7 @@
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Response, status
+from app.presentation.schemas.treinador import TreinadorResumo
 
 from app.application.use_cases.atleta_esporte import AtletaEsporteUseCases
 from app.core.exceptions import InvalidReference
@@ -19,6 +20,17 @@ from app.presentation.schemas.esporte import EsporteResumo
 
 router = APIRouter(tags=["Atleta-Esporte"])
 
+@router.get(
+    "/atletas/me/esportes/{esporte_id}/treinadores",
+    response_model=list[TreinadorResumo],
+)
+async def listar_treinadores_do_esporte(
+    esporte_id: UUID,
+    _user: UserModel = Depends(require_atleta),
+    use_cases: AtletaEsporteUseCases = Depends(get_atleta_esporte_use_cases),
+) -> list[TreinadorResumo]:
+    treinadores = await use_cases.listar_treinadores_do_esporte(esporte_id)
+    return [TreinadorResumo.model_validate(t) for t in treinadores]
 
 @router.get(
     "/atletas/me/esportes/disponiveis",

@@ -2,6 +2,7 @@ from sqlalchemy import select
 
 from app.domain.entities.atleta import Atleta
 from app.infrastructure.database.models import (
+    UserModel,
     AtletaEsporteModel,
     AtletaModel,
     EsporteTreinadorModel,
@@ -39,6 +40,17 @@ class AtletaRepositoryImpl(BaseRepositoryImpl[Atleta, AtletaModel]):
             criado_em=entity.criado_em,
             alterado_em=entity.alterado_em,
         )
+        
+    async def delete(self, entity_id: UUID) -> None:
+        atleta = await self.session.get(AtletaModel, entity_id)
+        if atleta is None:
+            return
+        user = await self.session.get(UserModel, atleta.user_id)
+        await self.session.delete(atleta)
+        await self.session.flush()
+        if user is not None:
+            await self.session.delete(user)
+        await self.session.commit()
         
     async def list_by_treinador(self, treinador_id: UUID) -> list[Atleta]:
         result = await self.session.execute(

@@ -33,7 +33,7 @@ class AtletaModel(Base):
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
     user_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("users.id"), unique=True, nullable=False
+        UUID(as_uuid=True), ForeignKey("users.id"), unique=True, nullable=False, ondelete="CASCADE"
     )
     nome: Mapped[str] = mapped_column(String(length=100), nullable=False)
     email: Mapped[str] = mapped_column(
@@ -58,7 +58,7 @@ class TreinadorModel(Base):
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
     user_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("users.id"), unique=True, nullable=False
+        UUID(as_uuid=True), ForeignKey("users.id"), unique=True, nullable=False, ondelete="CASCADE"
     )
     nome: Mapped[str] = mapped_column(String(length=100), nullable=False)
     email: Mapped[str] = mapped_column(
@@ -83,7 +83,7 @@ class CoordenadorModel(Base):
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
     user_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("users.id"), unique=True, nullable=False
+        UUID(as_uuid=True), ForeignKey("users.id"), unique=True, nullable=False, ondelete="CASCADE"
     )
     instituicao_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True), ForeignKey("instituicoes.id"), nullable=True

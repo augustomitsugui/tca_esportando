@@ -21,6 +21,11 @@ class AtletaEsporteUseCases:
 
     async def listar_esportes_disponiveis(self) -> list[Esporte]:
         return await self.repository.list_available_esportes()
+    
+    async def listar_treinadores_do_esporte(self, esporte_id: UUID):
+        if not await self.repository.esporte_exists(esporte_id):
+            raise NotFound("Esporte não encontrado.")
+        return await self.repository.list_trainers_by_esporte(esporte_id)
 
     async def solicitar(
         self, atleta_id: UUID, esporte_id: UUID, user_id: UUID

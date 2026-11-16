@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+from app.domain.entities.treinador import TreinadorResumo
 from uuid import UUID, uuid4
 
 from sqlalchemy import delete, or_, select
@@ -50,11 +51,30 @@ class AtletaEsporteRepositoryImpl(
 
     async def get(self, vinculo_id: UUID) -> AtletaEsporte | None:
         return await super().get(vinculo_id)
+    
+    async def list_trainers_by_esporte(
+        self, esporte_id: UUID
+    ) -> list[TreinadorResumo]:
+        result = await self.session.execute(
+            select(TreinadorModel)
+            .join(
+                EsporteTreinadorModel,
+                EsporteTreinadorModel.treinador_id == TreinadorModel.id,
+            )
+            .where(EsporteTreinadorModel.esporte_id == esporte_id)
+            .order_by(TreinadorModel.nome)
+        )
+        return [
+            TreinadorResumo(
+                id=m.id, user_id=m.user_id, nome=m.nome, email=m.email, bio=m.bio
+            )
+            for m in result.scalars().all()
+        ]
 
     @staticmethod
     def _to_entity_with_names(row: tuple) -> AtletaEsporte:
         model, atleta_nome, esporte_nome = row
-        entity = AtletaEsporteRepositoryImpl._to_entity(model)
+        entity = self._to_entity(model)
         return AtletaEsporte(
             id=entity.id,
             atleta_id=entity.atleta_id,
