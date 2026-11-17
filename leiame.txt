@@ -1,0 +1,242 @@
+GUIA DO FRONTEND ESPORTANDO
+oi mafer! um guia rápido que eu fiz com ajuda da ia pro frontend!!!
+abraços do seu amigo augusto!!
+=================================================
+
+Stack: Svelte 4 + Vite 5 + Tailwind 3. Roteamento por caminho (sem #).
+Tudo fica em front/src. Regras de negocio ficam no backend.
+
+
+1) MAPA RAPIDO: QUERO MUDAR ... -> EDITO ...
+---------------------------------------------
+Cores (verde/vermelho)            tailwind.config.js  (colors: brand = verde, accent = vermelho)
+Fontes                            index.html (link do Google Fonts) + tailwind.config.js (fontFamily)
+Icones                            index.html (Material Symbols) + componente ui/Icon.svelte
+Estilo global (fundo, inputs)     src/app.css  (.field-input, .sport-title, .stripes)
+Nome/logo "Esportando"            components/ui/Logo.svelte  e  public/favicon.svg
+Titulo da aba do navegador        title: 'xxx' em router/routes.js
+Texto/visual do menu lateral      components/layout/Sidebar.svelte
+Itens do menu de cada perfil      config/navigation.js
+Topo (email, perfil, sair)        components/layout/Topbar.svelte
+Tela de login/cadastro (lado verde) components/layout/AuthLayout.svelte
+Tela de login                     pages/auth/LoginPage.svelte
+Tela de cadastro                  pages/auth/RegisterPage.svelte
+Campos do cadastro                components/forms/RegisterForm.svelte
+Os 3 cards "Sou atleta..."        components/forms/RoleSelector.svelte
+Lista de instituicoes (treinador) components/forms/InstitutionSelect.svelte
+Tela "aguardando aprovacao"       pages/auth/PendingPage.svelte
+Pagina 404                        pages/NotFoundPage.svelte
+Painel inicial (contadores)       config/dashboards.js (quais numeros) + pages/dashboard/DashboardPage.svelte
+Atalhos do painel                 viram do config/navigation.js (campo "hint")
+Colunas/campos de uma tabela CRUD config/resources.js
+Botoes "novo/editar/excluir"      components/features/ResourceManager.svelte
+Esportes do atleta                pages/athlete/AthleteSportsPage.svelte
+Treinos do atleta                 pages/athlete/AthleteTrainingsPage.svelte
+Pedidos/atletas do treinador      pages/trainer/TrainerLinksPage.svelte
+Aprovar/recusar treinador/coord.  pages/shared/RequestsPage.svelte
+Vinculos do local (esporte/inst.) components/features/LocalLinksModal.svelte
+Perfil / instituicao do coord.    pages/shared/ProfilePage.svelte + config/resources.js (const singles)
+Cartao de treino / esporte        components/features/TreinoCard.svelte / SportCard.svelte
+Cartao de pedido (solicitacao)    components/features/RequestCard.svelte
+Cartao de vinculo atleta-esporte  components/features/VinculoCard.svelte
+Mensagens de erro da API          services/api.js (KNOWN_CODES e parseDetail)
+Porta do front / proxy            vite.config.js e docker-compose.yml
+Endereco do backend               docker-compose.yml -> BACKEND_URL
+
+
+2) ESTRUTURA DE PASTAS
+----------------------
+src/
+  main.js              entrada: carrega app.css e monta App
+  App.svelte           carrega a sessao (token) e mostra o Router
+  app.css              estilos globais Tailwind
+  router/
+    router.js          History API: navigate(), store "location", matchRoute()
+    routes.js          LISTA DE TODAS AS ROTAS (path, pagina, quem acessa)
+    guards.js          decide redirecionamentos (login, aprovacao, perfil)
+    Router.svelte      escolhe a rota atual e renderiza layout + pagina
+    Link.svelte        <a> que navega sem recarregar (use no lugar de <a href>)
+  components/
+    ui/                pecas genericas (Button, TextField, Modal, Card, Badge,
+                       DataTable, Tabs, Spinner, Alert, Toast...)
+    layout/            AppShell (area logada), Sidebar, Topbar, AuthLayout (login)
+    forms/             RegisterForm, RoleSelector, InstitutionSelect, DynamicForm
+    features/          pecas com cara de dominio (ResourceManager, cards, modal de vinculos)
+  pages/               telas finas, so juntam componentes
+  services/            chamadas HTTP (um arquivo por assunto)
+  stores/              auth.js (sessao) e toast.js (avisos)
+  config/              navigation.js, resources.js, dashboards.js
+  lib/                 roles.js, format.js, fields.js (funcoes auxiliares)
+
+
+3) COMO FUNCIONA O FLUXO (para achar problemas)
+-----------------------------------------------
+a) Abrir o site -> main.js -> App.svelte -> stores/auth.js bootstrap():
+   se existe token no localStorage chama GET /auth/me. Enquanto isso
+   aparece a bola girando.
+b) Router.svelte pega o caminho da URL, acha a rota em routes.js e roda
+   guards.js. Se o guard devolver um caminho, redireciona.
+c) Rota com layout AppShell = area logada (menu + topo). AuthLayout = login.
+d) Pagina chama services/*.js ou api.get(...) -> services/api.js
+   -> fetch("/api/...") -> Vite repassa ao backend (sem o /api).
+e) Erro da API vira texto em portugues via errorMessage() e aparece em
+   Alert (dentro de formularios) ou toast (canto da tela).
+f) Se qualquer resposta for 401, o token e apagado e vai para /login.
+
+
+4) COMO FAZER COISAS COMUNS
+---------------------------
+>>> Criar uma nova pagina
+1. Crie pages/.../MinhaPagina.svelte
+2. Em router/routes.js: import da pagina e uma linha
+   { path: '/minha-rota', title: 'Titulo', ...only('atleta'), component: MinhaPagina }
+   (only('admin','treinador') para varios perfis; para qualquer logado use ...app)
+3. Para aparecer no menu: adicione em config/navigation.js no perfil desejado.
+
+>>> Criar uma tela de CRUD sem escrever pagina
+1. Em config/resources.js adicione um objeto em "resources":
+   minhaLista: { title, subtitle, icon, singular, endpoint: '/rota-do-back',
+     columns: [{key:'nome',label:'Nome'}], fields: [...], create:true, edit:true, remove:true }
+2. Em routes.js:
+   { path: '/x', ...only('admin'), component: ResourcePage, props: { resource: 'minhaLista' } }
+   Tipos de campo: text, email, textarea, number, datetime, select.
+   select carrega opcoes assim: optionsFrom: { endpoint:'/esportes', value:'id', label:'nome' }
+   only:'create' faz o campo aparecer so ao criar.
+   defaults: (user) => ({...}) acrescenta dados fixos ao criar (ex.: treinador_id).
+   Coluna com lookup:'esporte_id' mostra o nome em vez do id.
+
+>>> Adicionar/remover um campo de formulario de CRUD
+   config/resources.js -> procure o recurso -> edite "fields" (e "columns" se
+   quiser na tabela). O nome em key tem que ser igual ao campo do schema do back.
+
+>>> Adicionar campo no cadastro
+   components/forms/RegisterForm.svelte: crie a variavel, o <TextField> e
+   inclua no objeto enviado em submit(). O campo precisa existir no schema do
+   back (app/presentation/schemas/registration.py).
+
+>>> Mudar o menu de um perfil
+   config/navigation.js. Campos: to (rota), label, icon (nome Material Symbols),
+   exact (true so para "Inicio"), hint (texto do atalho no painel).
+
+>>> Mudar os numeros do painel
+   config/dashboards.js. Cada item em "stats" tem label, icon, tone
+   (green/red) e load() que busca uma lista e conta.
+
+>>> Trocar cores
+   tailwind.config.js. brand-600 e a cor principal (botoes, menu). accent-600 e
+   o vermelho. Troque os hex e todo o site muda.
+
+>>> Mudar um endpoint
+   services/*.js (vinculos, role-requests, locais, treinos, auth) ou o campo
+   "endpoint" em config/resources.js.
+
+>>> Mudar textos de erro
+   services/api.js, objeto KNOWN_CODES (codigos do fastapi-users). Outras
+   mensagens vem prontas do backend.
+
+
+5) ONDE CADA PERFIL ENTRA
+-------------------------
+Admin = usuario com is_superuser = true no banco (nao tem rota de criacao no
+back). Entra em /admin.
+Atleta, treinador e coordenador entram em /painel.
+Treinador e coordenador so passam do /aguardando depois que
+GET /auth/me devolve approval_status = "aprovada".
+Quem decide perfil/aprovacao: lib/roles.js (getRole, needsApproval,
+homePathFor) e router/guards.js. O backend continua sendo quem autoriza de verdade.
+
+Rotas (router/routes.js):
+ publico     /login  /cadastro
+ aprovacao   /aguardando
+ geral       /painel  /perfil
+ atleta      /atleta/esportes  /atleta/treinos
+ treinador   /treinador/esportes  /locais  /treinos  /solicitacoes  /atletas
+ coordenador /coordenador/instituicao  /locais  /esportes  /solicitacoes
+ admin       /admin  /admin/solicitacoes  /instituicoes  /coordenadores
+             /treinadores  /atletas  /esportes  /locais  /treinos
+
+
+6) PROBLEMAS COMUNS E ONDE OLHAR
+--------------------------------
+"Nao conecta / erro de rede em tudo"
+  - Backend esta de pe? (docker compose up no back, porta 17000)
+  - BACKEND_URL em front/docker-compose.yml (padrao host.docker.internal:17000)
+  - Teste no navegador: http://localhost:5173/api/  deve mostrar {"status":"ok"}
+
+"Pagina em branco / erro no console"
+  - F12 -> Console. Erro de import = caminho errado em algum import.
+  - Rode no front: docker compose logs -f front   (mostra erro de compilacao Svelte)
+
+"Pagina nova abre 404"
+  - Faltou a linha em router/routes.js ou o path esta diferente da URL.
+
+"Ao abrir uma rota direto (F5) da 404 do servidor"
+  - Em dev o Vite ja trata. Se algum dia usar build + outro servidor, ele precisa
+    devolver index.html para todos os caminhos (fallback de SPA).
+
+"Fui jogado de volta para /painel ou /admin"
+  - guards.js: o perfil nao esta em "roles" da rota (only(...)).
+
+"Treinador/coordenador preso em /aguardando"
+  - Falta aprovar a solicitacao (coordenador aprova treinador; admin aprova
+    coordenador). Veja approval_status em GET /auth/me.
+
+"Erro 403 numa tela"
+  - Regra do backend (perfil, aprovacao, dono do recurso). A mensagem do back
+    aparece na tela. O front nao decide isso.
+
+"Erro 422 / mensagem em ingles ao salvar"
+  - Validacao do Pydantic (tamanho maximo, tipo). Confira os campos em
+    config/resources.js contra os schemas em back/app/presentation/schemas.
+
+"Login diz e-mail ou senha incorretos"
+  - Login usa form-urlencoded com username=email (services/authService.js).
+
+"Sessao cai sozinha"
+  - Token JWT dura 3600 s (back/app/core/config.py). Ao expirar vai para /login.
+
+"Admin nao consegue criar/ver algo"
+  - Alguns endpoints do back exigem dados que o admin nao tem (ex.: instituicao).
+    Veja a mensagem de erro e a regra no back/app/application/use_cases.
+
+"Mudei um arquivo e nao atualizou"
+  - Volume do compose: o Vite usa polling (vite.config.js). Reinicie o container
+    se travar: docker compose restart front.
+  - Mudou package.json? docker compose up --build.
+
+"Icone aparece como texto (ex.: sports_soccer)"
+  - A fonte Material Symbols nao carregou (sem internet?). Confira o link no
+    index.html. O nome do icone precisa existir em fonts.google.com/icons.
+
+"Cor/classe Tailwind nao aplica"
+  - Nao monte classes com texto dinamico (ex.: 'bg-' + cor). Use a classe
+    completa no codigo, senao o Tailwind remove. Veja os mapas "tones" nos
+    componentes ui/.
+
+
+7) COMPONENTES PRONTOS (para reaproveitar)
+------------------------------------------
+Button        variant: primary | accent | outline | danger | ghost; size sm|md;
+              icon="nome"; loading; full
+IconButton    icon, title, tone (neutral|danger)
+TextField     label, name, type, bind:value, icon, required, maxlength, step, hint
+TextArea      idem
+SelectField   options=[{value,label}], bind:value
+Card          hover (efeito), padded
+Badge / StatusBadge   status pendente|aprovada|aprovado|rejeitada|recusado
+Modal         open, title, icon, size sm|md|lg, slot "footer", evento close
+ConfirmDialog confirmacao; askReason pede motivo (usado em recusar)
+DataTable     columns + rows + slot "actions"
+Tabs          tabs=[{id,label,count}], bind:active
+Spinner, EmptyState, Alert, PageHeader, StatCard, HeroBanner, Avatar, Logo
+Toast         toast.success('msg') / toast.error('msg') de stores/toast.js
+Link          <Link to="/rota">texto</Link>   (nunca use <a href> para rotas internas)
+Navegar por codigo: import { navigate } from router/router.js; navigate('/rota')
+
+
+8) DICAS FINAIS
+---------------
+- Para ver o que a API devolve: http://localhost:17000/docs (Swagger do back).
+- Quando o back mudar um schema, ajuste: config/resources.js (campos),
+  services/*.js (rotas) e, se for tela especifica, a pagina correspondente.
+- Nunca coloque regra de negocio no front; apenas envie/mostre dados.

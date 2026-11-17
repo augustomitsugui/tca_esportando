@@ -1,0 +1,14 @@
+services:
+  front:
+    container_name: esportando_front
+    build: .
+    ports:
+      - "5173:5173"
+    environment:
+      # O backend roda no compose da pasta back (porta 17000 no host).
+      - BACKEND_URL=http://host.docker.internal:17000
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - .:/app
+      - /app/node_modules
